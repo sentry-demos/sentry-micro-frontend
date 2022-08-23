@@ -1,0 +1,92 @@
+/* Real micro-frontend would have its own CSS but we are lazy */
+
+.error_controls {
+  width:fit-content;
+  margin: auto;
+  padding: 0.8em 0.8em 0 0.8em;
+  text-align: left;
+}
+
+.module_root {
+  min-height: content;
+  position: absolute;
+  padding: 0px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+
+  border-radius:1ex;
+  overflow:hidden;
+  #box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+#host .module_title {
+  background-color: #2f1937;
+  color: white;
+}
+.module_root#host {
+  width: 90%;
+  height: 70%;
+  display: flex;
+  flex-direction: column;
+
+  border: 1px #2f1937 solid;
+  background: #9586a5;
+  color: #2f1937;
+}
+
+#micro_mount_point {
+  flex-grow: 1;
+}
+#micro .module_title {
+  background-color: rgb(245, 84, 89);
+  color: white;
+}
+.module_root#micro {
+  position:relative;
+  width: 80%;
+  height: 70%;
+
+  border: 1px rgb(245, 84, 89) solid;
+  background: rgb(240, 200, 201);
+  color: #2f1937;
+}
+
+body {
+  background: #faf9fb;
+  font-family: Rubik,Avenir Next,Helvetica Neue,sans-serif;
+}
+
+.demo_name,.sdk_version {
+  color: rgb(245, 84, 89);
+  font-size: large;
+  margin-top: 0;
+  display: inline-block;
+} 
+label[for=method],label[for=ssv],label[for=lms] {
+  font-weight: bold;
+}
+label[for=method],label[for=ssv],#micro_sentry_enabled,#host_sentry_tracing {
+  margin-left: 2em;
+}
+.sentry_project,#micro_sentry_tracing,#host_sentry_debug,#micro_sentry_debug {
+  margin-left: 1em;
+}
+.sentry_project,label[for=hst],label[for=mst],label[for=hsd],label[for=msd] {
+  font-size: smaller;
+}
+.sdk_version {
+  float: right;
+}
+
+.module_title {
+  font-size: 1.2em;
+  padding-left: 1ex;
+}
+
+.footnote {
+  font-size:smaller;
+  color: #6e5677;
+  padding-left: 1ex;
+}
+

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<!-- only for Google Cloud Storage, will break local -->
+<head>
+	<title>sentry-micro-frontend</title>
+  <link rel="stylesheet" href="src/monolith.css">
+</head>
+<body>
+  <h1 class="demo_name">sentry-micro-frontend</h1>
+  <a target="_blank" href="https://github.com/realkosty/sentry-micro-frontend">(github)</a>
+  <label for="method">Sentry init: </label>
+  <select name="method" id="method">
+    <option value="lib-1h2c-v6">lib-1h2c-v6.js (<- recommended)</option>
+    <option value="lib-1h2c-wrap-v6">lib-1h2c-wrap-v6.js (fwiw)</option>
+    <option value="lib-1h2c-auto-v6" disabled>lib-1h2c-auto-v6.js (not impl yet)</option>
+    <option value="lib-1h2c-beacon-v6" disabled>lib-1h2c-beacon-v6.js (broken)</option>
+    <option value="naive" disabled>naive.js (broken)</option>
+    <option value="mlmmn-v6" disabled>mlmmn-v6.js (broken)</option>
+    <option value="mlmmn-v7"disabled>mlmmn-v7.js (broken)</option>
+  </select>
+  <label for="ssv">SDK version: </label>
+  <select name="ssv" id="sentry_sdk_version">
+    <option value="7.11.1">7.11.1 (CDN bundle.tracing)</option>
+    <option value="6.19.6">6.19.6 (CDN bundle.tracing)</option>
+  </select>
+  <input type="checkbox" id="micro_sentry_enabled" name="lms"><label for="lms">[micro] Sentry enabled</label>
+  <input type="checkbox" id="sentry_sdk_min_js" name="ssmj"><label for="ssmj">Sentry SDK .min.js</label>
+  <input type="checkbox" id="host_sentry_tracing" name="hst"><label for="hst">[H] tracing</label>
+  <input type="checkbox" id="micro_sentry_tracing" name="mst"><label for="mst">[M] tracing</label>
+  <input type="checkbox" id="host_sentry_debug" name="hsd"><label for="hsd">[H] debug</label>
+  <input type="checkbox" id="micro_sentry_debug" name="msd"><label for="msd">[M] debug</label>
+  
+  <script type="text/javascript" src="env.js"></script>
+  <script type="module" src="src/common.js"></script>
+  <script type="module" src="methods/init.js"></script>
+  <script type="module" src="methods/naive.js"></script>
+  <script type="module" src="methods/lib-1h2c-wrap-v6.js"></script>
+  <!--<script type="module" src="methods/lib-1h2c-funcname-v6.js"></script>-->
+  <script type="module" src="methods/mlmmn-v6.js"></script>
+  <script type="module" src="methods/mlmmn-v7.js"></script>
+  <script type="module" src="methods/lib-1h2c-v6.js"></script>
+  <script type="module" src="methods/lib-1h2c-beacon-v6.js"></script>
+  <script type="module" src="micro.js"></script>
+
+  <!-- Application entry point 
+       Everything happens here -->
+  <script type="module" src="host.js"></script>
+  
+  <div class="module_root" id="host">
+
+    <!-- Host content dynamically inserted here -->
+
+    <div id="micro_mount_point">
+      <!-- *** host.js mounts micro-frontend here *** -->
+    </div>
+
+  </div> 
+
+
+</body>
+
