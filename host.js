@@ -4,7 +4,7 @@
  *    2. Depending on initialization order global event handlers registered
  *       by each [h] and [m] may execute in any order
  */  
-import {dynamic_load_sentry} from './dynamic_load_sentry.js'
+import {dynamic_load_sentry, fool_isNativeFetch} from './dynamic_load_sentry.js'
 import {sticky_select_init, sticky_checkbox_init, add_project_link} from './src/common.js';
 import * as ErrorControls from './src/error_controls.js' ;
 import {micro_init} from './micro.js';
@@ -21,11 +21,25 @@ sticky_checkbox_init("micro_sentry_debug",    false);
 if (MICRO_PROJECT_URL) {add_project_link(MICRO_PROJECT_URL, "micro", "label[for=msd]");};
 if (HOST_PROJECT_URL) {add_project_link(HOST_PROJECT_URL, "host", "label[for=msd]");};
 
+const nativeFetch = window.fetch;
+window.fetch = function(...args) {
+  let body = args[1].body;
+  if (!body.match(/"type":"session"/)) {
+    let error_msg = body.match(/"type":"Error","value":"([^"]+)/)[1];
+    let truncated_url = args[0].replace(/\?.*/,'...');
+    console.log(`Sending error "${error_msg}" to ${truncated_url}`);
+  }
+  return nativeFetch.apply(window, args);
+};
+fool_isNativeFetch();
+
   
 let module = "host";
 
 /* --> [host] Sentry initialized here <-- */
 await dynamic_load_sentry(module);
+
+fool_isNativeFetch();
 
 /* --> [host] application initialized here <-- */
 if (
