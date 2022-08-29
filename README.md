@@ -44,7 +44,7 @@ TBD. This is a piece of cake compared to **lib**: basically like lib-1h2c-v6.js 
 
 Below is a list of desired feautres and whether a particular solution supports each. 
 
-| Feature support / Method | [lib-1h2c-v6.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/lib-1h2c-v6.js) | [remote-1h2c-v6v7](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/lib-1h2c-v6.js) |
+| Feature support / Method | [lib-1h2c-v6.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/lib-1h2c-v6v7.js) | [remote-1h2c-v6v7.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/remote-1h2c-v6v7.js) |
 | ------------------------ | ---------------- | ---- |
 | Auto-assign to `micro` team  | **yes**  | **yes**  |
 | Separate projects, quotas  | **yes**  | **yes**  |
@@ -60,7 +60,7 @@ Below is a list of desired feautres and whether a particular solution supports e
 ### What's "1h2c"?
 One hub, two clients. 
 
-### ** Source mapping
+### ** Source mapping (lib)
 A **lib**-type `micro` can potentially have multiple `host` applications consuming it. Each `host` might use a different minification algorithm, serve `micro` code at different URL path or even bundle it together with other code into one big `.js` file. Naturally it is the responsibility of the `host` team to upload their source mappings during their build process, because `micro` team simply doesn't possess the information to generate those mappings. Source maps are associated with and uploaded for each individual release, each file can have only one mapping in a given release. This leaves room for a few options:
 
 * Option 1 (recommended - less things can go wrote)
