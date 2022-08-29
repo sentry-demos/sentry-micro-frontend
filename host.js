@@ -9,8 +9,9 @@ import {sticky_select_init, sticky_checkbox_init, add_project_link} from './src/
 import * as ErrorControls from './src/error_controls.js' ;
 import {micro_init} from './micro.js';
 
-sticky_select_init("method", "lib-1h2c-v6");
+sticky_select_init("method", "lib-1h2c-v6v7");
 sticky_select_init("sentry_sdk_version", "6.19.6");
+sticky_checkbox_init("host_sentry_enabled",  true);
 sticky_checkbox_init("micro_sentry_enabled",  true);
 sticky_checkbox_init("sentry_sdk_min_js",  false);
 sticky_checkbox_init("host_sentry_tracing",   false);

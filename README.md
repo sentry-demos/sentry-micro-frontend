@@ -44,18 +44,18 @@ TBD. This is a piece of cake compared to **lib**: basically like lib-1h2c-v6.js 
 
 Below is a list of desired feautres and whether a particular solution supports each. 
 
-| Feature support / Method | [lib-1h2c-v6.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/lib-1h2c-v6.js) |
-| ------------------------ | ---------------- |
-| Auto-assign to `micro` team  | **yes**  |
-| Separate projects, quotas  | **yes**  |
-| Source mapping `micro` | **yes (not tested)****  |
-| No errors leak out of `micro` into `host`  | **yes**  |
-| Separate breadcrumbs, tags, context | no |
-| React support  | possible, not impl. |
-| Performance `host`  | **yes**  |
-| Performance: `host`-only spans in `host`  | no |
-| Performance `micro` | no |
-| Code change needed in `host` (none/generic/custom) | custom |
+| Feature support / Method | [lib-1h2c-v6.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/lib-1h2c-v6.js) | [remote-1h2c-v6v7](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/lib-1h2c-v6.js) |
+| ------------------------ | ---------------- | ---- |
+| Auto-assign to `micro` team  | **yes**  | **yes**  |
+| Separate projects, quotas  | **yes**  | **yes**  |
+| Source mapping `micro` | **yes (tricky)****  | **yes**  |
+| No errors leak out of `micro` into `host`  | **yes**  | **yes**  |
+| Separate breadcrumbs, tags, context | no | no  |
+| React support  | not impl. | not impl. |
+| Performance `host`  | **yes**  | **yes** |
+| Performance: `host`-only spans in `host`  | no | no |
+| Performance `micro` | no | no |
+| Code change needed in `host` (none/generic/custom) | custom | **generic** |
 
 ### What's "1h2c"?
 One hub, two clients. 
@@ -84,4 +84,10 @@ python3 -m http.server
 Then rename `env.js.example` to `env.js`, fill in your DSNs, releases and project links. 
 
 Finally, open http://localhost:8000/
+
+# Sandbox tips
+
+Sandbox sets `mv` tag on all events sent to Sentry which is `<module>@<SDK version>`, for example:
+
+```mv:lib-1h2c-v6v7@7.11.1```
 

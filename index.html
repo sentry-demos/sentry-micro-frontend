@@ -10,7 +10,8 @@
   <a target="_blank" href="https://github.com/realkosty/sentry-micro-frontend">(github)</a>
   <label for="method">Sentry init: </label>
   <select name="method" id="method">
-    <option value="lib-1h2c-v6">lib-1h2c-v6.js (<- recommended)</option>
+    <option value="lib-1h2c-v6v7">lib-1h2c-v6v7.js (<- recommended)</option>
+    <option value="remote-1h2c-v6v7">remote-1h2c-v6v7.js (<- recommended)</option>
     <option value="lib-1h2c-wrap-v6">lib-1h2c-wrap-v6.js (fwiw)</option>
     <option value="lib-1h2c-auto-v6" disabled>lib-1h2c-auto-v6.js (not impl yet)</option>
     <option value="lib-1h2c-beacon-v6" disabled>lib-1h2c-beacon-v6.js (broken)</option>
@@ -23,7 +24,8 @@
     <option value="7.11.1">7.11.1 (CDN bundle.tracing)</option>
     <option value="6.19.6">6.19.6 (CDN bundle.tracing)</option>
   </select>
-  <input type="checkbox" id="micro_sentry_enabled" name="lms"><label for="lms">[micro] Sentry enabled</label>
+  <input type="checkbox" id="host_sentry_enabled" name="lhs"><label for="lhs">[host] Sentry</label>
+  <input type="checkbox" id="micro_sentry_enabled" name="lms"><label for="lms">[micro] Sentry</label>
   <input type="checkbox" id="sentry_sdk_min_js" name="ssmj"><label for="ssmj">Sentry SDK .min.js</label>
   <input type="checkbox" id="host_sentry_tracing" name="hst"><label for="hst">[H] tracing</label>
   <input type="checkbox" id="micro_sentry_tracing" name="mst"><label for="mst">[M] tracing</label>
@@ -38,7 +40,8 @@
   <!--<script type="module" src="methods/lib-1h2c-funcname-v6.js"></script>-->
   <script type="module" src="methods/mlmmn-v6.js"></script>
   <script type="module" src="methods/mlmmn-v7.js"></script>
-  <script type="module" src="methods/lib-1h2c-v6.js"></script>
+  <script type="module" src="methods/lib-1h2c-v6v7.js"></script>
+  <script type="module" src="methods/remote-1h2c-v6v7.js"></script>
   <script type="module" src="methods/lib-1h2c-beacon-v6.js"></script>
   <script type="module" src="micro.js"></script>
 

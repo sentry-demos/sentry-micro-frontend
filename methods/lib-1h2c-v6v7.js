@@ -2,10 +2,13 @@ import './init.js';
 
 /* This is the recommended method.
  *
- * Tested only with @sentry/browser v6.19.6 but will likely work with v7 as well 
+ * Tested with both @sentry/browser v6.19.6 and v7.11.1
+ *
+ * This is intended for library use-case (see README.md). If your micro-frontend is a remote
+ * component deployed independently of the [host] application check out methods/remote-*
  */
 
-window.SENTRY_INIT_METHODS["lib-1h2c-v6"] = {
+window.SENTRY_INIT_METHODS["lib-1h2c-v6v7"] = {
   
   // no wrapping inside [micro] is necessary
   micro_internal_wrapper: null, 
@@ -53,7 +56,8 @@ window.SENTRY_INIT_METHODS["lib-1h2c-v6"] = {
    * its Sentry.
    */
   init_micro_sentry: function(tracing, debug, initialScope) {
-    window.SentryMicroClient = new Sentry.BrowserClient({
+    /* TODO replace with unique module name, e.g. SentryCheckoutComponentClient */
+    window.SentryMicroClient = new Sentry.BrowserClient({ 
       dsn: MICRO_DSN,
       release: MICRO_RELEASE,
       debug: debug,

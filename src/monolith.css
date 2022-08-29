@@ -63,10 +63,13 @@ body {
   margin-top: 0;
   display: inline-block;
 } 
-label[for=method],label[for=ssv],label[for=lms] {
+label {
+  white-space: nowrap;
+}
+label[for=method],label[for=ssv],label[for=lms],label[for=lhs] {
   font-weight: bold;
 }
-label[for=method],label[for=ssv],#micro_sentry_enabled,#host_sentry_tracing {
+label[for=method],label[for=ssv],#host_sentry_enabled,#micro_sentry_enabled,#host_sentry_tracing,#sentry_sdk_min_js {
   margin-left: 2em;
 }
 .sentry_project,#micro_sentry_tracing,#host_sentry_debug,#micro_sentry_debug {

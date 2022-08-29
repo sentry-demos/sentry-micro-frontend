@@ -40,7 +40,7 @@ window.SENTRY_INIT_METHODS["lib-1h2c-beacon-v6"] = {
     var get_micro_instances = function() {
         let wsm = window.__SENTRY_MICRO__;
         if (wsm === undefined || wsm.instances === undefined) {
-          window.__SENTRY_MICRO__ = {instances: {}};
+          return [];
         }
         // We don't know when new microFE's are loaded so better check for new ones each time 
         for (const iname in wsm.instances) {
