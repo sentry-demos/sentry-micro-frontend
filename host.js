@@ -82,10 +82,10 @@ function host_init() {
   let title = module_root.querySelector(".module_title");
   title.after(error_controls);
 
-  eval_errors();
-    
   /* Initialize and mount Micro */
   let mt_point = document.querySelector('#micro_mount_point');
   micro_init((e) => {mt_point.appendChild(e)});
+  
+  eval_errors();
 };
 
