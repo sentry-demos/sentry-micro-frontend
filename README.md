@@ -12,17 +12,20 @@ We use the term Micro-frontend to describe 2 distinct architectures:
 * **True (remote) micro-frontends**: components are built, deployed and served separately. Often associated with Webpack's module federation.[^1]
 *  **Library** (lib) components are package dependencies included (`npm, yarn`) during `[host]` app's build process. They are deployed together with the host app and served from the same origin and sometimes even the same bundle file. 
 
+Terminology: we refer to top-level web application that consumes individual (either **"remote"** or **"lib"**) components developed by different teams as `host` and non-host components themselves as `micro`'s. 
+* `host` = host application (no relation to network host), that ties all components (`micro`s) together into a single user-facing web application.
+* `micro` = one of the components (either "remote" or "lib") included in the `host` app. A `micro` may be used in different `host`s.
+
 There is no (fundamental) difference from the browser runtime perspective. However, when it comes to the dev process, the two couldn't be further apart:
 | | remote | lib |
 | --- | --- | --- |
 | Component-level ownership | yes |  yes |
-| `micro`[^2] team controls their code's deployment to prod | yes | no |
+| `micro` team controls their code's deployment to prod | yes | no |
 | `micro` team controls their code's minification and URL paths | yes | no |
 
 This last difference is of huge imporance when integrating Sentry. It turns out that **library** architecture presents some unique. 
 
 [^1]: Since this is a new and evolving space we try, whenever possible, to provide solutions based on basic principles that work regardless of the composition technology.
-[^2]: We refer to top level web application that consumes individual (either **"remote"** or **"lib"**) components developed by different teams as `host` and non-host components themselves as `micro`'s.
 
 # Sentry support
 As of August 2022 Sentry offers limited support for the MFE use case, therefore this repository will showcase _current_ solutions, best classified as workarounds. 
