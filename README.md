@@ -44,7 +44,7 @@ TBD. This is a piece of cake compared to **lib**: basically like lib-1h2c-v6.js 
 
 Below is a list of desired feautres and whether a particular solution supports each. 
 
-| Feature support / Method | [lib-1h2c-v6.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/lib-1h2c-v6v7.js) | [remote-1h2c-v6v7.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/remote-1h2c-v6v7.js) |
+| Feature support / Method | [lib-1h2c-v6v7.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/lib-1h2c-v6v7.js) | [remote-1h2c-v6v7.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/remote-1h2c-v6v7.js) |
 | ------------------------ | ---------------- | ---- |
 | Auto-assign to `micro` team  | **yes**  | **yes**  |
 | Separate projects, quotas  | **yes**  | **yes**  |
