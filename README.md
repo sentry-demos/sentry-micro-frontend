@@ -61,7 +61,7 @@ Below is a list of desired feautres and whether a particular solution supports e
 | Code change needed in `host` (none/generic/custom) | custom | **generic** |
 
 ### What's "1h2c"?
-One hub, two clients. 
+One `Sentry.Hub`, two `Sentry.BrowserClient`'s. As opposed to creating multiple hubs, which is what some proposed solutions do.
 
 ### ** Source mapping (lib)
 A **lib**-type `micro` can potentially have multiple `host` applications consuming it. Each `host` might use a different minification algorithm, serve `micro` code at different URL path or even bundle it together with other code into one big `.js` file. Naturally it is the responsibility of the `host` team to upload their source mappings during their build process, because `micro` team simply doesn't possess the information to generate those mappings. Source maps are associated with and uploaded for each individual release, each file can have only one mapping in a given release. This leaves room for a few options:
