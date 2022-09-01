@@ -38,8 +38,8 @@ window.SENTRY_INIT_METHODS["remote-1h2c-v6v7"] = {
 
                       for (const iname in micros) {
                         if (stack.match(micros[iname].matcher)) {
-                          event.release = window.SentryMicroClient._options.release;
-                          window.SentryMicroClient.captureEvent(event);
+                          event.release = micros[iname].client._options.release;
+                          window.micros[iname].client.captureEvent(event);
                           return null;
                         }
                       }
@@ -64,7 +64,7 @@ window.SENTRY_INIT_METHODS["remote-1h2c-v6v7"] = {
     /* TODO replace "micro" with unique module name, e.g. "CheckoutComponent" */
     window.__SENTRY_MICRO__.instances["micro"] = { 
       // [micro] team supplies matcher based on origin URL and filename of their component
-      matcher: /http:\/\/localhost:8000\/micro.js/,
+      matcher: /http[s]?:\/\/(localhost:8000|(www\.)?sentry-micro-frontend\.net)\/micro.js/,
       client: new Sentry.BrowserClient({
         dsn: MICRO_DSN,
         release: MICRO_RELEASE,
