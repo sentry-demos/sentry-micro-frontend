@@ -39,7 +39,7 @@ window.SENTRY_INIT_METHODS["remote-1h2c-v6v7"] = {
                       for (const iname in micros) {
                         if (stack.match(micros[iname].matcher)) {
                           event.release = micros[iname].client._options.release;
-                          window.micros[iname].client.captureEvent(event);
+                          micros[iname].client.captureEvent(event);
                           return null;
                         }
                       }
