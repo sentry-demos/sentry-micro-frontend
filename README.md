@@ -66,6 +66,7 @@ Below is a list of desired feautres and whether a particular solution supports e
 | Performance: `host`-only spans in `host`  | no | no |
 | Performance `micro` | no | no |
 | Code change needed in `host` (none/generic/custom) | custom | **generic** |
+| Works if `host` doesn't use Sentry | no | no |
 
 ### What's "1h2c"?
 One `Sentry.Hub`, two `Sentry.BrowserClient`'s. As opposed to creating multiple hubs, which is what some proposed solutions do.
