@@ -12,16 +12,23 @@ We use the term Micro-frontend to describe 2 distinct architectures:
 * **True (remote) micro-frontends**: components are built, deployed and served separately. Often associated with Webpack's module federation.[^1]
 *  **Library** (lib) components are package dependencies included (`npm, yarn`) during `[host]` app's build process. They are deployed together with the host app and served from the same origin and sometimes even the same bundle file. 
 
+We further distinguish organizationally:
+* **Same company** (remote, lib) `host` and `micro` are owned by different teams within the same company.
+* **3rd Party** (3premote, 3plib) Typically multiple `host` apps owned by separate 3rd party companies who are `micro`'s customers.
+
+As of right now we don't have any protypes or snippets for 3rd party scenarios, but it has come up a few times.
+
 Terminology: we refer to top-level web application that consumes individual (either **"remote"** or **"lib"**) components developed by different teams as `host` and non-host components themselves as `micro`'s. 
 * `host` = host application (no relation to network host), that ties all components (`micro`s) together into a single user-facing web application.
 * `micro` = one of the components (either "remote" or "lib") included in the `host` app. A `micro` may be used in different `host`s.
 
 There is no (fundamental) difference from the browser runtime perspective. However, when it comes to the dev process, the two couldn't be further apart:
-| | remote | lib |
-| --- | --- | --- |
-| Component-level ownership | yes |  yes |
-| `micro` team controls their code's deployment to prod | yes | no |
-| `micro` team controls their code's minification and URL paths | yes | no |
+| | remote | lib | 3premote | 3plib |
+| --- | --- | --- | --- | --- | 
+| Component-level ownership | yes |  yes | yes | yes |
+| `micro` team controls their code's deployment to prod | yes | no | yes | no |
+| `micro` team controls their code's minification and URL paths | yes | no | yes | no |
+| Code changes in the `host` are undesirable | no | no | yes | yes |
 
 This last difference is of huge imporance when integrating Sentry. It turns out that **library** architecture presents some unique. 
 
