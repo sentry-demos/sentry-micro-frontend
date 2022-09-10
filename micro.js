@@ -12,11 +12,13 @@ export async function micro_init(...args){
 
     if (internal_wrapper) {
       return internal_wrapper(() => {_micro_init(...args)});
+    } else {
+      return _micro_init(...args);
     }
+
   } else {
     console.log("[micro] Sentry not loaded (see UI checkbox).");
   }
-  return _micro_init(...args);
 }
   
 function _micro_init(mount_func) {

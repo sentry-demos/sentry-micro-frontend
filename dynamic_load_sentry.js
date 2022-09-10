@@ -35,6 +35,10 @@ export function fool_isNativeFetch() {
 }
 
 function _get_script_src(version, min_js) {
-  return `https://browser.sentry-cdn.com/${version}/bundle.tracing${min_js?".min":""}.js`;
+  let tracing = true;
+  if (version == "5.5.0") {
+    tracing = false; // tracing bundle not available for 5.5.0
+  }
+  return `https://browser.sentry-cdn.com/${version}/bundle${tracing?".tracing":""}${min_js?".min":""}.js`;
 }
 

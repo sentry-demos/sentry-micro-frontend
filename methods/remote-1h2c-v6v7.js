@@ -4,8 +4,9 @@ import './init.js';
  *
  * Tested with both @sentry/browser v6.19.6 and v7.11.1
  *
- * This is intended for library use-case (see README.md). If your micro-frontend is a remote
- * component deployed independently of the [host] application check out methods/remote-*
+ * This is intended for remote use-case (see README.md). If your micro-frontend is packaged as a
+ * dependency (npm, yarn) and built, bundled and deployed into [host] application as part of [host]
+ * team's build process, please checkout methods/lib-* and methods/3plib-*
  */
 
 window.SENTRY_INIT_METHODS["remote-1h2c-v6v7"] = {

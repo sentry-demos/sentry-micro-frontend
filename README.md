@@ -47,10 +47,10 @@ The nature of Javascript/browser environment presents significant obstacles to i
 	2.1. When using frameworks, e.g. React, errors in component callbacks can be correctly captured using the framework facilities, e.g. React error boundaries. However a lot of the event-based asyncronous code will still rely on globabl event handlers and therefore escape the "walls" of the framework (except in Angular/Zone.js).
 
 3. Loss of `function/file -> Component` mapping and function names during build process  (**lib** architecture).
-## Current methods (remote)
-TBD. This is a piece of cake compared to **lib**: basically like lib-1h2c-v6.js have `micro` provide their own callback to match URL/origin in `host`'s `beforeSend()`.
 
-## Current methods (lib)
+## Current methods
+
+Right now we don't have any methods to handle **3rd party** use cases except for wrapping ALL code, including every event handler, async callback in `try-catch-captureException()`.
 
 Below is a list of desired feautres and whether a particular solution supports each. 
 
@@ -101,4 +101,6 @@ Finally, open http://localhost:8000/
 Sandbox sets `mv` tag on all events sent to Sentry which is `<module>@<SDK version>`, for example:
 
 ```mv:lib-1h2c-v6v7@7.11.1```
+
+Sandbox intercepts all `fetch` requests for sentry errors and logs them to console. So as long as you have "info" level enabled in your dev tools console you don't have to hunt for the right requests in the Network tab. 
 
