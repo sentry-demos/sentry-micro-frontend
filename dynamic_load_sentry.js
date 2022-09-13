@@ -1,25 +1,23 @@
-import {sticky_checkbox_get, sticky_select_get} from './src/common.js';
+import {sticky_checkbox_get, sticky_select_get, dynamic_load_script} from './src/common.js';
 
 export async function dynamic_load_sentry(module) {
 
   let method = sticky_select_get("method");
+  let method_impl = window.SENTRY_INIT_METHODS[method];
   let sdk_version = sticky_select_get("sentry_sdk_version");
 
-  let script = document.createElement('script');
-  let script_loaded = new Promise((r) => {
-    script.onload = r;
-  });
-  script.src=_get_script_src(sdk_version, sticky_checkbox_get("sentry_sdk_min_js"));
-  document.head.appendChild(script);
+  let sentry_sdk_src = _get_script_src(sdk_version, sticky_checkbox_get("sentry_sdk_min_js")); 
 
-  await script_loaded;
+  if (!(module === 'micro' && 'micro_sandbox_dont_load_script' in method_impl)) {
+    await dynamic_load_script(sentry_sdk_src);
+  }
 
   /* --> [micro] Sentry initialized here <-- */
-  let method_impl = window.SENTRY_INIT_METHODS[method];
   method_impl[`init_${module}_sentry`](
     sticky_checkbox_get(`${module}_sentry_tracing`),
     sticky_checkbox_get(`${module}_sentry_debug`),
-    {tags: {mv: `${method}@${sdk_version}`}}
+    {tags: {mv: `${method}@${sdk_version}`}},
+    sentry_sdk_src
   );
 
   return method_impl.micro_internal_wrapper;

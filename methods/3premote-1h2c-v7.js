@@ -1,4 +1,4 @@
-import './init.js';
+import {default_host_init} from './init.js';
 
 /* This is the recommended method.
  *
@@ -10,70 +10,57 @@ import './init.js';
  */
 
 window.SENTRY_INIT_METHODS["3premote-1h2c-v7"] = {
+
+  micro_sandbox_dont_load_script: true, // by sandbox only
   
   micro_internal_wrapper: null, // no wrapping inside [micro] is necessary
   
-  // This goes into [host] application's code
-  init_host_sentry: function(tracing, debug, initialScope) {
-    Sentry.init({ // No changes needed in [host] code - standard init()
-        dsn: HOST_DSN,
-        release: HOST_RELEASE,
-        debug: debug, 
-        integrations: tracing ? [new Sentry.BrowserTracing()] : [],
-        tracesSampleRate: 1.0,
-        initialScope: initialScope
-    });
-  },
+  init_host_sentry: default_host_init, // no changes needed in [host] code 
+
 
   /* This goes into [micro]'s code */
-  init_micro_sentry: function(tracing, debug, initialScope) /* these args needed only for the sandbox */ {
-  
-    var _sentry_error_queue = [];
-    var _init_micro_complete = false;
-    var _host_sentry_present = false;
+  // NOTE: this code will decide when and whether to load Sentry SDK dynamically
+  // Do not load Sentry SDK anywhere else in your code (including any <scirpt> tags) 
+  init_micro_sentry: function(
+    tracing,      // sandbox only, remove in production code
+    debug,        // sandbox only
+    initialScope, // sandbox only
 
-    var _is_sentry_initialized = function() {
-      // Loading Sentry SDK JS will set up window.__SENTRY__ but not create Hub or Client
-      // which is done in init()
+    // URL to dynamically load Sentry SDK bundle from
+    sentry_sdk_src, 
+    // -1 = no wait, 0 = wait for DOMContentLoaded, >0 = milliseconds past DOMContentLoaded
+    max_wait_host_sentry_init = 2000, 
+    // unique name of micro component, e.g. 'VideoPlayer' or 'ShoppingCart'
+    component_name = 'micro', 
+    // regex matching origin URL and filename of micro component
+    stack_matcher = /http[s]?:\/\/(localhost:8000|(www\.)?sentry-micro-frontend\.net)\/micro.js/
+    )  {
+    
+    var is_sentry_sdk_loaded = function() {
+      return 'Sentry' in window; 
+    }
+
+    var is_sentry_initialized = function() {
+      // Loading Sentry SDK will create __SENTRY__ but Hub + Client not created until init()
       return "__SENTRY__" in window && "hub" in window.__SENTRY__;
     }
 
-    // Temporary hanlder that queues errors 
-    // turns itself into a pass-through dummy once Sentry is initialized
-    var _patch_queueing_temp_handler = function(eventType) {
-      let onEventType = `on${eventType}`;
-      let old_handler = window[onEventType];
-      let handler = function(...args) {
-        // Sentry, once initialized will chain this function in a similar manner to how we
-        // chain old hanlder below. At that point we start acting as pass-through
-        // See https://github.com/getsentry/sentry-javascript/blob/9b7f43246e75934c5b689f04147be788d3589fc2/packages/utils/src/instrument.ts#L607
-        if (window[onEventType] === handler) {
-          _sentry_error_queue.push([eventType, args]);
-        } else {
-          if (!_init_micro_complete) {
-            // [host] Sentry already initialized but [micro] Client not set up yet
-            // At this point 1 error has already been processed (potentially incorrectly) by [host] Sentry
-            // Nothing we can do about it
-            _sentry_error_queue.push([eventType, args]);
-            _init_micro_sentry();
-          }
-        }
-        if (old_handler) {
-          return old_handler.apply(window, args);
-        }
-        return true;
-      }
-      window[onEventType] = handler;
-    }
+    var process_queued_errors = function() {
+      let errors = window.__SENTRY_MICRO__.error_queue;
+      // this disables temp queueing hanlders, must be done before calling window.onerror() 
+      delete window.__SENTRY_MICRO__.error_queue; 
+      for (const [type, args] of errors) {
+        let [micro, error] = match_and_extract(...args);
+        if (micro) {
 
-    var _process_queued_errors = function() {
-      console.log(_sentry_error_queue.length > 0 ? "[micro] Processing any queued errors" : "[micro] No queued errors to process");
-      for (const [type, args] of _sentry_error_queue) {
-        if (_match_to_micro(...args)[0]) {
+          delete error.__sentry_captured__; // see temp_queueing_patch()
+
           if (type === 'error') {
             window.onerror.apply(window, args);
-          } else {
+          } else if (type === 'unhandledrejection') {
             window.onunhandledrejection.apply(window, args);
+          } else { // type === 'trycatch'
+            capture(micro, error);
           }
         }
       }
@@ -85,94 +72,120 @@ window.SENTRY_INIT_METHODS["3premote-1h2c-v7"] = {
      *
      * Returns [micro, error] if error matches a micro, [null, error] otherwise
      */
-    var _match_to_micro = function(...args) {
-      let micros = window.__SENTRY_MICRO__.instances;
+    var match_and_extract = function(...args) {
       let msg, url, line, column, error;
       if (args[0] && typeof args[0] === 'object' && 'constructor' in args[0] && args[0].constructor.name === 'PromiseRejectionEvent') {
         error = args[0].reason
+      } else if (args.length === 1) {
+        error = args[0];
       } else {
         [msg, url, line, column, error] = args;
       }
       if (error) {
-        let stack = error.stack;
-        for (const iname in micros) {
-          if (stack.match(micros[iname].matcher)) {
-            return [micros[iname], error];
-          }
+        let micro = match(error.stack);
+        if (micro) {
+          return [micro, error];
         }
       }
       return [null, error];
-    }
+    };
 
-    var _capture = function(micro, error) {
+    var match = function(stack) {
+      let micros = window.__SENTRY_MICRO__.instances;
+      for (const iname in micros) {
+        if (stack.match(micros[iname].matcher)) {
+          return micros[iname];
+        }
+      }
+      return null;
+    };
+
+    var capture = function(micro, error) {
       // NOTE: we're skipping all this stuff:
       // https://github.com/getsentry/sentry-javascript/blob/249e64d02e/packages/browser/src/integrations/globalhandlers.ts#L82
-      delete error.__sentry_captured__; // see (!_init_micro_complete) in queueing handlers
       micro.client.captureException(error);
     }
-
-    var _patch_global_handler = function(eventType) {
+    
+    var patch_global_handler = function(eventType, patch_func) {
       let onEventType = `on${eventType}`;
-      let newold_handler = window[onEventType];
-      let patch_handler = (old_handler) => {
-        return (...args) => {
-          let [micro, error] = _match_to_micro(...args);
-          if (micro) {
-            _capture(micro, error);
-            return true;
-          }
+      let old_handler = window[onEventType];
+      let handler = function(...args) {
+        patch_func(...args);
+        if (old_handler) {
+          // OK because error.__sentry_captured__ will stop host-sentry from reporting 
           return old_handler.apply(window, args);
-        };
+        }
+        return eventType === 'error' ? false : true;
       }
-      window[onEventType] = patch_handler(newold_handler);
+      window[onEventType] = handler;
     }
 
+    // Temporary hanlder that queues errors, then becomes a pass-thru once no longer needed
+    // Sentry.init() will chain this function similarly to how we chain old hanlder below. 
+    // Once that happens we immediately patch it with a permanent filtering handler and
+    // process all the queued errors
+    var temp_queueing_patch = function(eventType) {
+      return (...args) => {
+        let eq = window.__SENTRY_MICRO__.error_queue;
+        if (eq) {
+          eq.push([eventType, args]);
+          if (match_and_extract(...args)[1].__sentry_captured__) {
+            // host-sentry is initialized and this is the first error captured. If this error 
+            // is from micro then it has already leaked into into host-dsn/project. This won't
+            // happen for subsequent erros.
+            micro_init();
+          }
+        } 
+      }
+    }
 
-    var _wrap_callback = function(callback) {
+    var filtering_patch = function(...args) {
+        let [micro, error] = match_and_extract(...args);
+        if (micro) {
+          capture(micro, error);
+        }
+    }
+
+    var wrap_callback = function(callback, patch_func) {
       return function(...callback_args) {
         try {
           callback(...callback_args); // apply?
         } catch (e) {
-          if (_host_sentry_present) {
-            let [micro, error] = _match_to_micro(null, null, null, null, e);
-            if (micro) {
-              _capture(micro, error);
-            } 
-          }
-          // captureException() sets error.__sentry_captured__ so won't be captured again by [host]
+          patch_func(e);
+          // captureException() sets error.__sentry_captured__ so won't be captured again by host-sentry
           throw e;
         }
       }
     }
     
-    var _patch_prop = function(object, prop_name, factory) {
+    var patch_prop = function(object, prop_name, factory) {
       let original = object[prop_name];
       let patched = factory(original);
       object[prop_name] = patched;
     };
 
-    // patches function by wrapping callback (1st argument) with try-catch-captureException
-    var _patch_set_callback_func = function(object, func_name) {
-      _patch_prop(object, func_name, (original) => {
+    // patches function like setTimeout(), etc by wrapping its callback (1st argument)
+    var patch_set_callback_func = function(object, func_name, patch_func) {
+      patch_prop(object, func_name, (original) => {
         return (...args) => { 
           let original_callback = args[0];
-          args[0] = _wrap_callback(original_callback); 
+          args[0] = wrap_callback(original_callback, patch_func); 
           return original.apply(this, args);
         }
       });
     };
 
-    var _patch_xhr = function() {
+    var patch_xhr = function(patch_func) {
       if (!'XMLHttpRequest' in window) {
         return;
       }
-      _patch_prop(XMLHttpRequest.prototype, 'send', (original) => {
+      patch_prop(XMLHttpRequest.prototype, 'send', (original) => {
         return (...args) => { 
           var xhr = this;
-          var xhr_props = ['onload', 'onerror', 'onprogress', 'onreadystatechange'];
-          xhr_props.forEach(prop => {
-            if (prop in xhr && typeof xhr[prop] === 'function') {
-              _patch_function(xhr, original_name);
+          var callback_props = ['onload', 'onerror', 'onprogress', 'onreadystatechange'];
+          callback_props.forEach(prop => {
+            if (callback_prop in xhr && typeof xhr[callback_prop] === 'function') {
+              patch_prop(xhr, callback_prop, wrap_callback(xhr[callback_prop], patch_func));
             }
           });
           return original.apply(this, args);
@@ -180,75 +193,159 @@ window.SENTRY_INIT_METHODS["3premote-1h2c-v7"] = {
       });
     }
 
-    var _init_micro_client = function () {
+    var init_micro_registry = function () {
       if (window.__SENTRY_MICRO__ === undefined) {
         window.__SENTRY_MICRO__ = {instances: {}};
       }
-      /* TODO replace "micro" with unique module name, e.g. "CheckoutComponent" */
-      window.__SENTRY_MICRO__.instances["micro"] = { 
-        // [micro] team supplies matcher based on origin URL and filename of their component
-        matcher: /http[s]?:\/\/(localhost:8000|(www\.)?sentry-micro-frontend\.net)\/micro.js/,
-        client: new Sentry.BrowserClient({
-          dsn: MICRO_DSN,
-          release: MICRO_RELEASE,
-          debug: debug, /* remove this (sandbox) */
-          transport: ("fetch" in window ? Sentry.makeFetchTransport : Sentry.makeXHRTransport)
-        })
+      window.__SENTRY_MICRO__.instances[component_name] = { 
+        matcher: stack_matcher
       };
     }
 
-    var _normal_sentry_init = function() {
-      Sentry.init({
-          dsn: MICRO_DSN,
-          release: MICRO_RELEASE,
-          debug: debug, 
-          integrations: tracing ? [new Sentry.BrowserTracing()] : [],
-          tracesSampleRate: 1.0,
-          initialScope: initialScope
+    var init_micro_client = function() {
+      window.__SENTRY_MICRO__.instances[component_name].client = new Sentry.BrowserClient({
+        dsn: MICRO_DSN,
+        release: MICRO_RELEASE,
+        debug: !(debug === undefined || debug === false), /* remove this (sandbox) */
+        transport: ("fetch" in window ? Sentry.makeFetchTransport : Sentry.makeXHRTransport)
       });
     }
 
-    var _patch_all = function() {
-      _patch_global_handler('error');
-      _patch_global_handler('unhandledrejection');
-      // See https://github.com/getsentry/sentry-javascript/blob/efd32f0f6/packages/browser/src/integrations/trycatch.ts#L86
-      _patch_set_callback_func(window, 'setTimeout');
-      _patch_set_callback_func(window, 'setInterval');
-      _patch_set_callback_func(window, 'requestAnimationFrame');
-      _patch_xhr();
+    var is_micro_client_initialized = function() {
+      return window.__SENTRY_MICRO__.instances[component_name].client !== undefined;
+    }
+
+    var normal_filtering_sentry_init = function(init_function) {
+      init_function({
+          dsn: MICRO_DSN,
+          release: MICRO_RELEASE,
+          debug: !(debug === undefined || debug === false), 
+          integrations: tracing === undefined || tracing === false ? [] : [new Sentry.BrowserTracing() ],
+          tracesSampleRate: 1.0,
+          initialScope: initialScope,
+          beforeSend: (event, hint) => {
+            let stack = hint.originalException.stack || hint.syntheticException.stack;
+            let micro = match(stack);
+            if (micro) {
+              event.release = micro.client._options.release;
+              micro.client.captureEvent(event);
+              return null;
+            }
+            return event;
+          }
+      });
+    }
+
+    var patch_temp_queueing_handlers = function() {
+      window.__SENTRY_MICRO__.error_queue = [];
+      patch_global_handler('error', temp_queueing_patch('error'));
+      patch_global_handler('unhandledrejection', temp_queueing_patch('unhandledrejection'));
+      patch_set_callback_func(window, 'setTimeout', temp_queueing_patch('trycatch'));
+      patch_set_callback_func(window, 'setInterval', temp_queueing_patch('trycatch'));
+      patch_set_callback_func(window, 'requestAnimationFrame', temp_queueing_patch('trycatch'));
+      patch_xhr(temp_queueing_patch('trycatch'));
+    }
+
+    var patch = function() {
+      // these correspond to GlobalHandlers and TryCatch integrations
+      patch_global_handler('error', filtering_patch);
+      patch_global_handler('unhandledrejection', filtering_patch);
+      patch_set_callback_func(window, 'setTimeout', filtering_patch);
+      patch_set_callback_func(window, 'setInterval', filtering_patch);
+      patch_set_callback_func(window, 'requestAnimationFrame', filtering_patch);
+      patch_xhr(filtering_patch);
+
+    }
+
+    var has_DOMContentLoaded_already_fired = function() {
+      return document.readyState === "complete" ||
+          (document.readyState !== "loading" && !document.documentElement.doScroll);
+    }
+
+    var after_max_wait = function(callback) {
+      var loaded = has_DOMContentLoaded_already_fired();
+      var wait = max_wait_host_sentry_init;
+
+      if (wait == -1 || loaded && wait == 0) {
+        callback();
+      } else if (loaded) {
+          window.setTimeout(callback, wait);
+      } else {
+        document.addEventListener("DOMContentLoaded", wait == 0 ? callback : () => {
+          if (is_sentry_initialized()) {
+            callback();
+          } else {
+            window.setTimeout(callback, wait);
+          }
+        });
+      }
+    }
+    
+    var load_sentry_sdk_if_needed_then = function(callback) {
+      if (is_sentry_sdk_loaded()) {
+        callback();
+      } else {
+        dynamic_load_sentry_sdk(callback);
+      }
+    }
+
+    var dynamic_load_sentry_sdk = function(callback) {
+      let script = document.createElement('script');
+      script.onload = callback;
+      script.src = sentry_sdk_src;
+      document.head.appendChild(script);
+    }
+
+    var patch_immediately_after_sentry_init = function(patch_func) {
+      var orig_sentry_init = Sentry.init;
+      patch_prop(Sentry, 'init', (orig_init) => {
+        return (...args) => {
+          orig_sentry_init.apply(window, args); // host-sentry init()
+          patch_func();
+        }
+      });
+      return orig_sentry_init;
+    }
+    
+    var micro_init = function() {
+      if (is_micro_client_initialized()) {
+        return;
+      }
+      init_micro_client();
+      patch(); 
+      if (window.__SENTRY_MICRO__.error_queue) {
+        process_queued_errors();
+      }
     }
     
     /* --->  Entry point <--- */
-    _init_micro_client();
 
-    if (_is_sentry_initialized()) {
-      _host_sentry_present = true;
-      console.log("[micro] Sentry already initialized, patching global handlers");
-      _patch_all();
+    init_micro_registry();
+
+    if (is_sentry_initialized()) {
+      micro_init();
     } else {
-      console.log("[micro] Sentry is not initialized yet, giving it a chance.");
-      console.log("[micro] .");
-      _patch_queueing_temp_handler('error');
-      _patch_queueing_temp_handler('unhandledrejection');
+      patch_temp_queueing_handlers();
 
-      var _init_micro_sentry = function() {
-        if (_is_sentry_initialized()) {
-          _host_sentry_present = true;
-          _patch_all();
-        } else {
-          _normal_sentry_init();
-        }
-        _init_micro_complete = true;
-        console.log("[micro] Initialized micro Sentry");
-        _process_queued_errors();
+      if (is_sentry_sdk_loaded()) { 
+        var orig_sentry_init = patch_immediately_after_sentry_init(() => {
+          micro_init();
+        });
       }
-      document.addEventListener("DOMContentLoaded", () => {
-        if (!_init_micro_complete) {
-          _init_micro_sentry();
-        }
+      
+      after_max_wait(() => { 
+        load_sentry_sdk_if_needed_then(() => {
+          if (is_sentry_initialized()) {
+            micro_init(); // if not already, see temp_queueing_patch() and patch_immediately...
+          } else {
+            normal_filtering_sentry_init(orig_sentry_init ? orig_sentry_init : Sentry.init);
+            process_queued_errors();
+            // TODO what if host wakes up from coma and calls Sentry.init() after this? should 
+            // we stub Sentry.init() with something that will report a meaningful message to 
+            // micro-dsn, host-dsn or both?
+          }
+        });
       });
     }
-    
-
   }
 };

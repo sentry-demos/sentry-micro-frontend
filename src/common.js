@@ -1,3 +1,13 @@
+export async function dynamic_load_script(src) {
+    let script = document.createElement('script');
+    let script_loaded = new Promise((r) => {
+      script.onload = r;
+    });
+    script.src = src;
+    document.head.appendChild(script);
+    await script_loaded;
+}
+
 export function sticky_checkbox_init(id, initial_value, root = document) {
   let cbox = root.querySelector(`#${id}`);
   if (sessionStorage.getItem(id) == null) { /* null or undefined */
