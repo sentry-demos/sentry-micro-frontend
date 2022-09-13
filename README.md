@@ -54,19 +54,20 @@ Right now we don't have any methods to handle **3rd party** use cases except for
 
 Below is a list of desired feautres and whether a particular solution supports each. 
 
-| Feature support / Method | [lib-1h2c-v6v7.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/lib-1h2c-v6.js) | [remote-1h2c-v6v7.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/remote-1h2c-v6v7.js) |
+| Feature support / Method | [lib-1h2c-v6v7.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/lib-1h2c-v6.js) | [remote-1h2c-v6v7.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/remote-1h2c-v6v7.js) | [WrapALL](#wrapall) |
 | ------------------------ | ---------------- | ---- |
-| Auto-assign to `micro` team  | **yes**  | **yes**  |
-| Separate projects, quotas  | **yes**  | **yes**  |
-| Source mapping `micro` | **yes (tricky)****  | **yes**  |
-| No errors leak out of `micro` into `host`  | **yes**  | **yes**  |
-| Separate breadcrumbs, tags, context | no | no  |
-| React support  | not impl. | not impl. |
-| Performance `host`  | **yes**  | **yes** |
-| Performance: `host`-only spans in `host`  | no | no |
-| Performance `micro` | no | no |
-| Code change needed in `host` (none/generic/custom) | custom | **generic** |
-| Works if `host` doesn't use Sentry | no | no |
+| Auto-assign to `micro` team  | **yes**  | **yes**  | **yes** |
+| Separate projects, quotas  | **yes**  | **yes**  | **yes** |
+| Source mapping `micro` | **yes (tricky)****  | **yes**  | **yes** |
+| No errors leak out of `micro` into `host`  | **yes**  | **yes**  | **yes** |
+| Separate breadcrumbs, tags, context | no | no  | no |
+| React support  | not impl. | not impl. | not impl. |
+| Performance `host`  | **yes**  | **yes** | **yes** |
+| Performance: `host`-only spans in `host`  | no | no | no |
+| Performance `micro` | no | no | no |
+| Code change needed in `host` | custom | **generic** | **none** |
+| Works if `host` doesn't use Sentry | no | no | no |
+| Supports multiple `micro` components | no | no | **yes** |
 
 ### What's "1h2c"?
 One `Sentry.Hub`, two `Sentry.BrowserClient`'s. As opposed to creating multiple hubs, which is what some proposed solutions do.
@@ -80,6 +81,46 @@ A **lib**-type `micro` can potentially have multiple `host` applications consumi
 	* Component owners (teams) make a contract to serve `micro` at a defined URL path, separate from all other code.
 	* Additionally (assuming build toolchain supports this) `micro` ships pre-transpiled/minified.
 	* `micro` team uploads their own source mappings.
+
+### WrapALL
+This method may be the best choice for **3premote** use case, because of its simplicity and the fact that it works without any change to the host-application code. The idea is to simply wrap all of `micro`'s entry points (including event handlers, anonymous function callbacks, etc.) in `try-catch` statements and then use a separate instance of Sentry client to report the errors to the right DSN/project. 
+* Code snippet below assume that all of `micro`'s  host-applications use Sentry and that it's initialized at the time of `micro`'s initialization. If those assumptions don't always hold it may be necessary to put some if-statements to check and either wait for the host-sentry to be initialized or dynamically load Sentry SDK through injecting a script element.
+```
+var sentry_micro_client = new Sentry.BrowserClient({
+ dsn: "https://abc54321@o12345.ingest.sentry.io/12345" 
+ release: "my-project-name@2.3.12",
+ transport: ("fetch" in window ? Sentry.makeFetchTransport : Sentry.makeXHRTransport)
+}
+
+var sentry_wrap = function(callback) {
+	return () => {
+		try {
+			callback();
+		} catch (e) {
+			sentry_micro_client.captureException(e);
+			// throw e; // if desired, host-sentry won't report it again
+		}
+	}
+}
+
+sentry_wrap(micro_init)();
+
+
+my_element.addEventListener('click', sentry_wrap(my_click_event_handler));
+
+window.setTimeout(sentry_wrap(() => {
+	// my code here
+	// more code
+}), 1000);
+
+var req = new XMLHttpRequest();
+req.addEventListener("load", sentry_wrap(() => {
+	// my code here
+	// more code	
+}));
+req.open("GET", "http://www.example.org/example.txt");
+req.send();
+```
 
 ### Experimental methods
 
