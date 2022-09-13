@@ -1,12 +1,15 @@
 import {default_host_init} from './init.js';
 
-/* This is the recommended method.
+/* This code is experimental. It is intended as an example and inspiration and should NOT be
+ * adopted for use in production software, because it has not been rigorously tested or reviewed. 
+ * The author makes no express or implied warranty of any kind, and specifically disclaims all
+ * indirect or implied warranties to the full extent allowed by applicable law.
  *
- * Tested with @sentry/browser v7.11.1, it might work with v6 but hasn't been tested
+ * Compatible with @sentry/browser v7.11.1
  *
- * This is intended for remote use-case (see README.md). If your micro-frontend is packaged as a
- * dependency (npm, yarn) and built, bundled and deployed into [host] application as part of [host]
- * team's build process, please checkout methods/lib-* and methods/3plib-*
+ * This is intended for 'remote' use-case (see README.md). If your component is packaged as a
+ * dependency (npm, yarn) and built, bundled and deployed as part of host-application's build
+ * process, then you should use other methods prefixed with 'lib-'
  */
 
 window.SENTRY_INIT_METHODS["3premote-1h2c-v7"] = {

@@ -52,7 +52,7 @@ Right now we don't have any methods to handle **3rd party** use cases except for
 
 Below is a list of desired feautres and whether a particular solution supports each. 
 
-| Feature support / Method | [lib-1h2c-v6v7.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/lib-1h2c-v6.js) | [remote-1h2c-v6v7.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/remote-1h2c-v6v7.js) | [WrapALL](#wrapall) | [3premote-1h2c-v7.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/3premote-1h2c-v7.js) |
+| Feature support / Method | [lib-1h2c-v6v7.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/lib-1h2c-v6.js) | [remote-1h2c-v6v7.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/remote-1h2c-v6v7.js) | [WrapALL](#wrapall) | [3premote-1h2c-v7.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/3premote-1h2c-v7.js)(experimental) |
 | ------------------------ | ---------------- | ---- | ---- | ---- |
 | Auto-assign to `micro` team               | **yes**  | **yes**  | **yes** | **yes** |
 | Separate projects, quotas                 | **yes**  | **yes**  | **yes** | **yes** |
