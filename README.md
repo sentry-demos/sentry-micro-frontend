@@ -47,27 +47,25 @@ The nature of Javascript/browser environment presents significant obstacles to i
 	2.1. When using frameworks, e.g. React, errors in component callbacks can be correctly captured using the framework facilities, e.g. React error boundaries. However a lot of the event-based asyncronous code will still rely on globabl event handlers and therefore escape the "walls" of the framework (except in Angular/Zone.js).
 
 3. Loss of `function/file -> Component` mapping and function names during build process  (**lib** architecture).
-
 ## Current methods
-
 Right now we don't have any methods to handle **3rd party** use cases except for wrapping ALL code, including every event handler, async callback in `try-catch-captureException()`.
 
 Below is a list of desired feautres and whether a particular solution supports each. 
 
-| Feature support / Method | [lib-1h2c-v6v7.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/lib-1h2c-v6.js) | [remote-1h2c-v6v7.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/remote-1h2c-v6v7.js) | [WrapALL](#wrapall) |
-| ------------------------ | ---------------- | ---- | ---- |
-| Auto-assign to `micro` team  | **yes**  | **yes**  | **yes** |
-| Separate projects, quotas  | **yes**  | **yes**  | **yes** |
-| Source mapping `micro` | **yes (tricky)****  | **yes**  | **yes** |
-| No errors leak out of `micro` into `host`  | **yes**  | **yes**  | **yes** |
-| Separate breadcrumbs, tags, context | no | no  | no |
-| React support  | not impl. | not impl. | not impl. |
-| Performance `host`  | **yes**  | **yes** | **yes** |
-| Performance: `host`-only spans in `host`  | no | no | no |
-| Performance `micro` | no | no | no |
-| Code change needed in `host` | custom | **generic** | **none** |
-| Works if `host` doesn't use Sentry | no | no | no |
-| Supports multiple `micro` components | no | no | **yes** |
+| Feature support / Method | [lib-1h2c-v6v7.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/lib-1h2c-v6.js) | [remote-1h2c-v6v7.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/remote-1h2c-v6v7.js) | [WrapALL](#wrapall) | [3premote-1h2c-v7.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/3premote-1h2c-v7.js) |
+| ------------------------ | ---------------- | ---- | ---- | ---- |
+| Auto-assign to `micro` team               | **yes**  | **yes**  | **yes** | **yes** |
+| Separate projects, quotas                 | **yes**  | **yes**  | **yes** | **yes** |
+| Source mapping `micro`                    | **yes (tricky)****  | **yes**  | **yes** | **yes** | 
+| No errors leak out of `micro` into `host` | **yes**  | **yes**  | **yes** | **yes** |
+| Separate breadcrumbs, tags, context       | no | no  | no | no |
+| React support                             | not impl. | not impl. | not impl. | not impl. |
+| Performance `host`                        | **yes**  | **yes** | **yes** | **yes** |
+| Performance: `host`-only spans in `host`  | no | no | no | no |
+| Performance `micro`                       | no | no | no | no |
+| Code change needed in `host`              | custom | **generic** | **none** | **none** |
+| Works if `host` doesn't use Sentry        | no | no | no | **yes** |
+| Supports multiple `micro` components      | ? | ? | **yes** | ? |
 
 ### What's "1h2c"?
 One `Sentry.Hub`, two `Sentry.BrowserClient`'s. As opposed to creating multiple hubs, which is what some proposed solutions do.
@@ -143,5 +141,5 @@ Sandbox sets `mv` tag on all events sent to Sentry which is `<module>@<SDK versi
 
 ```mv:lib-1h2c-v6v7@7.11.1```
 
-Sandbox intercepts all `fetch` requests for sentry errors and logs them to console. So as long as you have "info" level enabled in your dev tools console you don't have to hunt for the right requests in the Network tab. 
+Sandbox intercepts all `fetch` requests for sentry errors and logs them to console. So as long as you have "info" level enabled in your dev tools console you don't have to hunt for the right requests in the Network tab.
 
