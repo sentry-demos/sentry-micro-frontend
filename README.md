@@ -40,30 +40,36 @@ On top of that, components may be owned by:
 [^1]: Since this is a new and evolving space we try, whenever possible, to provide solutions based on basic principles that work regardless of the composition technology.
 
 # Sentry support
-As of August 2022 Sentry does not officially support MFE use case. This repository simply documents current _workarounds_. All included code is intended as example and not meant for production without further review and testing.
+As of August 2022 Sentry does not officially support MFE use case. 
+
+See [Fundamental technical challenges](#fundamental-technical-challenges) to understand why.
+
+This repository documents current workarounds (aka methods). All the code included in this repository is intended as example only and should NOT be adopted for use in production software, since it has not undergone a rigorous review and testing process.
 
 ## Current methods
-Below is a list of desired feautres and whether a particular solution supports each. 
+Below is a list of desired feautres and whether a particular method supports each.
 
-| Feature support / Method | [lib-1h2c-v6v7.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/lib-1h2c-v6.js) | [remote-1h2c-v6v7.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/remote-1h2c-v6v7.js) | [WrapALL](#wrapall) | [3premote-1h2c-v7.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/3premote-1h2c-v7.js)(experimental) |
+| Feature support / Method | [lib-1h2c](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/lib-1h2c-v6.js) | [remote-1h2c](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/remote-1h2c-v6v7.js) | [WrapALL](#wrapall-method) | [3premote-1h2c](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/3premote-1h2c-v7.js)|
 | ------------------------ | ---------------- | ---- | ---- | ---- |
 | Auto-assign to `micro` team               | **yes**  | **yes**  | **yes** | **yes** |
 | Separate projects, quotas                 | **yes**  | **yes**  | **yes** | **yes** |
-| Source mapping `micro`                    | **yes (tricky)****  | **yes**  | **yes** | **yes** | 
+| Source mapping `micro`                    | [**yes (tricky)***](#-source-mapping-lib)  | **yes**  | **yes** | **yes** | 
 | No errors leak out of `micro` into `host` | **yes**  | **yes**  | **yes** | **yes** |
 | Separate breadcrumbs, tags, context       | no | no  | no | no |
 | React support                             | not impl. | not impl. | not impl. | not impl. |
-| Performance `host`                        | **yes**  | **yes** | **yes** | **yes** |
+| Performance for `host`                        | **yes**  | **yes** | **yes** | **yes** |
 | Performance: `host`-only spans in `host`  | no | no | no | no |
-| Performance `micro`                       | no | no | no | no |
+| Performance for`micro`                       | no | no | no | no |
 | Code change needed in `host`              | custom | **generic** | **none** | **none** |
-| Works if `host` doesn't use Sentry        | no | no | no | **yes** |
-| Supports multiple `micro` components      | ? | ? | **yes** | ? |
+| Works if `host` doesn't use Sentry        | [no**](#-no-host-sentry) | [no**](#-no-host-sentry) | [no**](#-no-host-sentry) | **yes** |
+| Supports multiple `micro` components      | not impl. | not impl. | **yes** | ? |
+| Requires broad application code changes	| no | no | **yes** | no |
 
-### What's "1h2c"?
-One `Sentry.Hub`, two `Sentry.BrowserClient`'s. As opposed to creating multiple hubs, which is what some proposed solutions do.
+- *not impl. = possible, but not implemented yet*
+- *no = not feasible with this approach*
+- *`1h2c` stands for: one `Sentry.Hub`, two `Sentry.BrowserClient`'s. As opposed to creating multiple hubs.
 
-### ** Source mapping (lib)
+### * Source mapping (lib)
 A **lib**-type `micro` can potentially have multiple `host` applications consuming it. Each `host` might use a different minification algorithm, serve `micro` code at different URL path or even bundle it together with other code into one big `.js` file. Naturally it is the responsibility of the `host` team to upload their source mappings during their build process, because `micro` team simply doesn't possess the information to generate those mappings. Source maps are associated with and uploaded for each individual release, each file can have only one mapping in a given release. This leaves room for a few options:
 
 * Option 1 (recommended - less things can go wrote)
@@ -73,7 +79,10 @@ A **lib**-type `micro` can potentially have multiple `host` applications consumi
 	* Additionally (assuming build toolchain supports this) `micro` ships pre-transpiled/minified.
 	* `micro` team uploads their own source mappings.
 
-### WrapALL
+### ** No host Sentry
+The problem here is how do you know for sure that `host` is never loading Sentry or just didn't have a chance yet. You can have a timeout but then either delay `micro`'s widgets own initialization or miss on reporting errors that occur while you waiting. In [3premote-1h2c it is handled by patching temporary queueing handlers](https://github.com/realkosty/sentry-micro-frontend/blob/94ef7b374fb939b73a6d6b9b4f5c742114e2c7fd/methods/3premote-1h2c-v7.js#L433) but at that point you could as well implement the entire `3premote-1h2c`.
+
+### WrapALL method
 This method may be the best choice for **3premote** use case, because of its simplicity and the fact that it works without any change to the host-application code. The idea is to simply wrap all of `micro`'s entry points (including event handlers, anonymous function callbacks, etc.) in `try-catch` statements and then use a separate instance of Sentry client to report the errors to the right DSN/project. 
 * Code snippet below assume that all of `micro`'s  host-applications use Sentry and that it's initialized at the time of `micro`'s initialization. If those assumptions don't always hold it may be necessary to put some if-statements to check and either wait for the host-sentry to be initialized or dynamically load Sentry SDK through injecting a script element.
 ```
@@ -142,6 +151,4 @@ Finally, open http://localhost:8000/
 Sandbox sets `mv` tag on all events sent to Sentry which is `<module>@<SDK version>`, for example:
 
 ```mv:lib-1h2c-v6v7@7.11.1```
-
-Sandbox intercepts all `fetch` requests for sentry errors and logs them to console. So as long as you have "info" level enabled in your dev tools console you don't have to hunt for the right requests in the Network tab.
 
