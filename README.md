@@ -6,7 +6,7 @@ What is this repo?
 * **This documentation**. Keep on reading.
 
 # Problem Overview
-Micro-frontend is pattern in web application design where a single user-facing application is composed of 2 or more separate frontend components each owned (and in the case of true, remote MFEs - also deployed and operated) by a separate team. In this architecture the goal is to allow each component-owner team to build with maximum independence. Naturally the developers want the errors from different components **go into their own separate Sentry projects/DSNs**. Unfortunately, the naive approach of importing `@sentry/browser` and calling `Sentry.init()` in every component does not work.
+Micro-frontend is pattern in web application design where a single user-facing application is composed of 2 or more separate frontend components each owned (and in the case of true, remote, MFEs - also deployed and operated) by a separate team. In this architecture the goal is to allow each component-owner team to build with maximum independence. Naturally the developers want the errors from different components **go into their own separate Sentry projects/DSNs**. Unfortunately, the naive approach of importing `@sentry/browser` and calling `Sentry.init()` in every component does not work.
 
 We use the term Micro-frontend to describe 2 distinct architectures:
 * **True (remote) micro-frontends**: components are built, deployed and served separately. Often associated with Webpack's module federation.[^1]
@@ -16,11 +16,9 @@ We further distinguish organizationally:
 * **Same company** (remote, lib) `host` and `micro` are owned by different teams within the same company.
 * **3rd Party** (3premote, 3plib) Typically multiple `host` apps owned by separate 3rd party companies who are `micro`'s customers.
 
-As of right now we don't have any protypes or snippets for 3rd party scenarios, but it has come up a few times.
-
 Terminology: we refer to top-level web application that consumes individual (either **"remote"** or **"lib"**) components developed by different teams as `host` and non-host components themselves as `micro`'s. 
 * `host` = host application (no relation to network host), that ties all components (`micro`s) together into a single user-facing web application.
-* `micro` = one of the components (either "remote" or "lib") included in the `host` app. A `micro` may be used in different `host`s.
+* `micro` = one of the components (either "remote" or "lib") included in the `host` app. Usually a widget, plugin or library. A `micro` may be used in different `host`s.
 
 There is no (fundamental) difference from the browser runtime perspective. However, when it comes to the dev process, the two couldn't be further apart:
 | | remote | lib | 3premote | 3plib |
@@ -48,8 +46,6 @@ The nature of Javascript/browser environment presents significant obstacles to i
 
 3. Loss of `function/file -> Component` mapping and function names during build process  (**lib** architecture).
 ## Current methods
-Right now we don't have any methods to handle **3rd party** use cases except for wrapping ALL code, including every event handler, async callback in `try-catch-captureException()`.
-
 Below is a list of desired feautres and whether a particular solution supports each. 
 
 | Feature support / Method | [lib-1h2c-v6v7.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/lib-1h2c-v6.js) | [remote-1h2c-v6v7.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/remote-1h2c-v6v7.js) | [WrapALL](#wrapall) | [3premote-1h2c-v7.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/3premote-1h2c-v7.js)(experimental) |
@@ -101,8 +97,8 @@ var sentry_wrap = function(callback) {
 	}
 }
 
-sentry_wrap(micro_init)();
-
+/* Component's entry point */
+sentry_wrap(micro_widget_init)();
 
 my_element.addEventListener('click', sentry_wrap(my_click_event_handler));
 

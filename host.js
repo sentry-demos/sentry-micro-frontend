@@ -10,7 +10,7 @@ import * as ErrorControls from './src/error_controls.js' ;
 import {micro_init} from './micro.js';
 
 sticky_select_init("method", "lib-1h2c-v6");
-sticky_select_init("sentry_sdk_version", "6.19.6");
+sticky_select_init("sentry_sdk_version", "7.11.1");
 sticky_checkbox_init("host_sentry_enabled",  true);
 sticky_checkbox_init("micro_sentry_enabled",  true);
 sticky_checkbox_init("sentry_sdk_min_js",  false);
@@ -76,7 +76,9 @@ function host_init() {
     eventhandler_callback: () => {
       throw new Error(`Uncaught exception in event handler added by [${moduleU}]`);},
     settimeout_callback: () => {
-      throw new Error(`Uncaught exception in setTimeout callback [${moduleU}]`);}
+      throw new Error(`Uncaught exception in setTimeout callback [${moduleU}]`);},
+    xhr_callback: () => {
+      throw new Error(`Uncaught exception in XMLHttpRequest's 'load' callback [${moduleU}]`);}
   });
 
   let title = module_root.querySelector(".module_title");

@@ -44,7 +44,9 @@ function _micro_init(mount_func) {
       eventhandler_callback: () => {
         throw new Error(`Uncaught exception in event handler added by [${moduleU}]`);},
       settimeout_callback: () => {
-        throw new Error(`Uncaught exception in setTimeout callback [${moduleU}]`);}
+        throw new Error(`Uncaught exception in setTimeout callback [${moduleU}]`);},
+      xhr_callback: () => {
+        throw new Error(`Uncaught exception in XMLHttpRequest's 'load' callback [${moduleU}]`);}
     });
 
     module_root.appendChild(error_controls);

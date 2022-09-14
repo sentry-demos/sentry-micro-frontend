@@ -16,7 +16,8 @@ import {sticky_checkbox_get, sticky_checkbox_init} from './common.js';
   
 
 export function create({name, init_add_breadcrumb_callback, init_console_callback, 
-  init_capture_message_callback, init_exception_callback, eventhandler_callback, settimeout_callback}) {
+  init_capture_message_callback, init_exception_callback, eventhandler_callback, settimeout_callback, 
+  xhr_callback}) {
 
   let div = document.createElement("div");
   div.className="error_controls";
@@ -52,11 +53,15 @@ export function create({name, init_add_breadcrumb_callback, init_console_callbac
       <button type="button" class="settimeout">
         exception in setTimeout()
       </button>
+      <button type="button" class="xhr">
+        exception in XHR()
+      </button>
       <div class="footnote">* - initial execution</div>
       `;
   
   let b_eventhandler    = div.querySelector('.eventhandler');
   let b_settimeout      = div.querySelector('.settimeout');
+  let b_xhr             = div.querySelector('.xhr');
   
   sticky_checkbox_init(`${name}_init_add_breadcrumb`, false, div);
   sticky_checkbox_init(`${name}_init_console`, false, div);
@@ -67,9 +72,13 @@ export function create({name, init_add_breadcrumb_callback, init_console_callbac
     eventhandler_callback();
   });
   b_settimeout.addEventListener("click", () => {
-    window.setTimeout(() => {
-      settimeout_callback();
-    }, 1000);
+    window.setTimeout(settimeout_callback, 1000);
+  });
+  b_xhr.addEventListener("click", () => {
+    const req = new XMLHttpRequest();
+    req.addEventListener("load", xhr_callback);
+    req.open("GET", "/index.html");
+    req.send();
   });
 
   let eval_errors = function() {
