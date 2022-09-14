@@ -1,26 +1,33 @@
 # Summary
 What is this repo?
-* A **sandbox** for testing Sentry integration in [Micro-frontent (MFE)](https://micro-frontends.org/) architecture. (including both true, i.e. remote, MFEs and traditional build-time libraries)
+* A **sandbox** for testing different methods to make Sentry work within a family of web application architectures collectively referred to as [Micro-frontend (MFE)](https://micro-frontends.org/). 
 	* See [Sandbox how-to](#sandbox)
-* A **collection of code snippets** (["methods"](https://github.com/realkosty/sentry-micro-frontend/tree/main/methods)) 
-* **This documentation**. Keep on reading.
+* A **collection of code snippets** inside (["methods/"](https://github.com/realkosty/sentry-micro-frontend/tree/main/methods)) directory which are documented below, in [Current Methods](#current-methods)
+* **This documentation**. 
+** [Problem Overview](#problem-overview)
+** [Sentry support](#sentry-support)
+*** [Current Methods](#current-methods)
+*** [Fundamental technical challenges](#fundamental-technical-challenges)
+** [Sandbox how-to](#sandbox-how-to)
+** [Sandbox tips](#sandbox-tips)
 
 # Problem Overview
-Micro-frontend is pattern in web application design where a single user-facing application is composed of 2 or more separate frontend components each owned (and in the case of true, remote, MFEs - also deployed and operated) by a separate team. In this architecture the goal is to allow each component-owner team to build with maximum independence. Naturally the developers want the errors from different components **go into their own separate Sentry projects/DSNs**. Unfortunately, the naive approach of importing `@sentry/browser` and calling `Sentry.init()` in every component does not work.
+Micro-frontend is not a specific technology, but rather a concept (or buzzword). Modeled after the idea of microservices vs monolith backend, it is a design pattern where a single user-facing web application is composed of 2 or more separate frontend components each owned (and in the case of true, remote, MFEs - also deployed and operated) by a separate team. The goal is to allow each component-owner team to build and ship independently. Naturally, the developers want the errors from different components **go into their own separate Sentry projects/DSNs**. Unfortunately, the naive approach of calling `Sentry.init()` in each component does not work.
 
-We use the term Micro-frontend to describe 2 distinct architectures:
+Not everyone uses the term "micro-frontend". Developers may describe their micro-component (or `micro`) as **widget, plugin, library or module**. Typically, there is a top-level component responsible for tying everything together into a single user-facing web app, which we refer to as **host-application or host**. Sometimes a `micro` is consumed by multiple hosts (as in 3rd party scenario described later).
+
+There are 4 subtypes of this architecture. There is no (fundamental) difference between these 4 types from the browser runtime perspective. However, when it comes to integrating Sentry, each has its own distinct requirements and obstacles:
+
+| remote | lib |
+| 3premote | 3plib |
+
 * **True (remote) micro-frontends**: components are built, deployed and served separately. Often associated with Webpack's module federation.[^1]
-*  **Library** (lib) components are package dependencies included (`npm, yarn`) during `[host]` app's build process. They are deployed together with the host app and served from the same origin and sometimes even the same bundle file. 
+*  **Library** (lib) components are package dependencies included (`npm, yarn`) during host-application's build process. They are deployed together with the host app and served from the same origin and sometimes even the same bundle file. 
 
-We further distinguish organizationally:
-* **Same company** (remote, lib) `host` and `micro` are owned by different teams within the same company.
+On top of that, components may be owned by:
+* **Same org** (remote, lib) `host` and `micro` are owned by different teams within the same company.
 * **3rd Party** (3premote, 3plib) Typically multiple `host` apps owned by separate 3rd party companies who are `micro`'s customers.
 
-Terminology: we refer to top-level web application that consumes individual (either **"remote"** or **"lib"**) components developed by different teams as `host` and non-host components themselves as `micro`'s. 
-* `host` = host application (no relation to network host), that ties all components (`micro`s) together into a single user-facing web application.
-* `micro` = one of the components (either "remote" or "lib") included in the `host` app. Usually a widget, plugin or library. A `micro` may be used in different `host`s.
-
-There is no (fundamental) difference from the browser runtime perspective. However, when it comes to the dev process, the two couldn't be further apart:
 | | remote | lib | 3premote | 3plib |
 | --- | --- | --- | --- | --- | 
 | Component-level ownership | yes |  yes | yes | yes |
@@ -28,21 +35,10 @@ There is no (fundamental) difference from the browser runtime perspective. Howev
 | `micro` team controls their code's minification and URL paths | yes | no | yes | no |
 | Code changes in the `host` are undesirable | no | no | yes | yes |
 
-This last difference is of huge imporance when integrating Sentry. It turns out that **library** architecture presents some unique. 
-
 [^1]: Since this is a new and evolving space we try, whenever possible, to provide solutions based on basic principles that work regardless of the composition technology.
 
 # Sentry support
 As of August 2022 Sentry offers limited support for the MFE use case, therefore this repository will showcase _current_ solutions, best classified as workarounds. 
-
-## Fundamental technical challenges
-The nature of Javascript/browser environment presents significant obstacles to implementing first class support of MFEs in Sentry SDK. 
-
-1. Javascript's concurrency model (single thread event loop) makes it very difficult for Sentry Javascript SDK to [maintain 'current hub' state](https://develop.sentry.dev/sdk/unified-api/#concurrency). (e.g. client code async waiting inside `Hub.run()`).
-
-2. Sentry's reliance on **global event handlers** for catching errors in UI and async callbacks (`error`, `unhandledrejection`) as well as auto-instrumenting certain things, for example XHR breadcrumbs. Most **wrapper workarounds** (e.g. [mlmmn](https://github.com/getsentry/sentry-javascript/discussions/5217) or [ScriptedAlchemy](https://scriptedalchemy.medium.com/distributed-logging-in-federated-applications-with-sentry-f4249aa66e20)) forget that part and consequently only correctly route those errors that happen during component initialization when the page is loaded.
-
-	2.1. When using frameworks, e.g. React, errors in component callbacks can be correctly captured using the framework facilities, e.g. React error boundaries. However a lot of the event-based asyncronous code will still rely on globabl event handlers and therefore escape the "walls" of the framework (except in Angular/Zone.js).
 
 3. Loss of `function/file -> Component` mapping and function names during build process  (**lib** architecture).
 ## Current methods
@@ -116,7 +112,14 @@ req.open("GET", "http://www.example.org/example.txt");
 req.send();
 ```
 
-### Experimental methods
+## Fundamental technical challenges
+The nature of Javascript/browser environment presents significant obstacles to implementing first class support of MFEs in Sentry SDK. 
+
+1. Javascript's concurrency model (single thread event loop) makes it very difficult for Sentry Javascript SDK to [maintain 'current hub' state](https://develop.sentry.dev/sdk/unified-api/#concurrency). (e.g. client code async waiting inside `Hub.run()`).
+
+2. Sentry's reliance on **global event handlers** for catching errors in UI and async callbacks (`error`, `unhandledrejection`) as well as auto-instrumenting certain things, for example XHR breadcrumbs. Most **wrapper workarounds** (e.g. [mlmmn](https://github.com/getsentry/sentry-javascript/discussions/5217) or [ScriptedAlchemy](https://scriptedalchemy.medium.com/distributed-logging-in-federated-applications-with-sentry-f4249aa66e20)) forget that part and consequently only correctly route those errors that happen during component initialization when the page is loaded.
+
+	2.1. When using frameworks, e.g. React, errors in component callbacks can be correctly captured using the framework facilities, e.g. React error boundaries. However a lot of the event-based asyncronous code will still rely on globabl event handlers and therefore escape the "walls" of the framework (except in Angular/Zone.js).
 
 
 # Sandbox how-to<a name="sandbox"></a>
