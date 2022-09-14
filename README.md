@@ -1,15 +1,15 @@
 # Summary
 What is this repo?
-* A **sandbox** for testing different methods to make Sentry work within a family of web application architectures collectively referred to as [Micro-frontend (MFE)](https://micro-frontends.org/). 
+- A **sandbox** for testing different methods to make Sentry work within a family of web application architectures collectively referred to as [Micro-frontend (MFE)](https://micro-frontends.org/). 
 	* See [Sandbox how-to](#sandbox)
-* A **collection of code snippets** inside (["methods/"](https://github.com/realkosty/sentry-micro-frontend/tree/main/methods)) directory which are documented below, in [Current Methods](#current-methods)
-* **This documentation**. 
-** [Problem Overview](#problem-overview)
-** [Sentry support](#sentry-support)
-*** [Current Methods](#current-methods)
-*** [Fundamental technical challenges](#fundamental-technical-challenges)
-** [Sandbox how-to](#sandbox-how-to)
-** [Sandbox tips](#sandbox-tips)
+- A **collection of code snippets** inside (["methods/"](https://github.com/realkosty/sentry-micro-frontend/tree/main/methods)) directory which are documented below, in [Current Methods](#current-methods)
+- **This documentation**. 
+  - [Problem Overview](#problem-overview)
+  - [Sentry support](#sentry-support)
+    - [Current Methods](#current-methods)
+    - [Fundamental technical challenges](#fundamental-technical-challenges)
+  - [Sandbox how-to](#sandbox-how-to)
+  - [Sandbox tips](#sandbox-tips)
 
 # Problem Overview
 Micro-frontend is not a specific technology, but rather a concept (or buzzword). Modeled after the idea of microservices vs monolith backend, it is a design pattern where a single user-facing web application is composed of 2 or more separate frontend components each owned (and in the case of true, remote, MFEs - also deployed and operated) by a separate team. The goal is to allow each component-owner team to build and ship independently. Naturally, the developers want the errors from different components **go into their own separate Sentry projects/DSNs**. Unfortunately, the naive approach of calling `Sentry.init()` in each component does not work.
