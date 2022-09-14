@@ -54,7 +54,7 @@ export function create({name, init_add_breadcrumb_callback, init_console_callbac
         exception in setTimeout()
       </button>
       <button type="button" class="xhr">
-        exception in XHR()
+        exception in XHR.onload()
       </button>
       <div class="footnote">* - initial execution</div>
       `;
@@ -76,7 +76,7 @@ export function create({name, init_add_breadcrumb_callback, init_console_callbac
   });
   b_xhr.addEventListener("click", () => {
     const req = new XMLHttpRequest();
-    req.addEventListener("load", xhr_callback);
+    req.onload = xhr_callback; 
     req.open("GET", "/index.html");
     req.send();
   });
