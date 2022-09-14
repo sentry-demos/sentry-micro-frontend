@@ -56,7 +56,9 @@ window.SENTRY_INIT_METHODS["3premote-1h2c-v7"] = {
         let [micro, error] = match_and_extract(...args);
         if (micro) {
 
-          delete error.__sentry_captured__; // see temp_queueing_patch()
+          try {
+            delete error.__sentry_captured__; // see temp_queueing_patch()
+          } catch (x) {}
 
           if (type === 'error') {
             window.onerror.apply(window, args);
@@ -132,7 +134,11 @@ window.SENTRY_INIT_METHODS["3premote-1h2c-v7"] = {
         let eq = window.__SENTRY_MICRO__.error_queue;
         if (eq) {
           eq.push([eventType, args]);
-          if (match_and_extract(...args)[1].__sentry_captured__) {
+          let [micro, error] = match_and_extract(...args);
+          try {
+            let captured = error.__sentry_captured__;
+          } catch (x) {}
+          if (captured) {
             // host-sentry is initialized and this is the first error captured. If this error 
             // is from micro then it has already leaked into into host-dsn/project. This won't
             // happen for subsequent erros.
@@ -143,16 +149,16 @@ window.SENTRY_INIT_METHODS["3premote-1h2c-v7"] = {
     }
 
     var filtering_patch = function(...args) {
-        let [micro, error] = match_and_extract(...args);
-        if (micro) {
-          capture(micro, error);
-        }
+      let [micro, error] = match_and_extract(...args);
+      if (micro) {
+        capture(micro, error);
+      }
     }
 
     var wrap_callback = function(callback, patch_func) {
       return function(...callback_args) {
         try {
-          callback(...callback_args); // apply?
+          callback.apply(this, callback_args);
         } catch (e) {
           patch_func(e);
           // captureException() sets error.__sentry_captured__ so won't be captured again by host-sentry
@@ -169,7 +175,7 @@ window.SENTRY_INIT_METHODS["3premote-1h2c-v7"] = {
 
     // patches function like setTimeout(), etc by wrapping its callback (1st argument)
     var patch_set_callback_func = function(object, func_name, patch_func) {
-      patch_prop(object, func_name, (original) => {
+      patch_prop(object, func_name, function(original) {
         return (...args) => { 
           let original_callback = args[0];
           args[0] = wrap_callback(original_callback, patch_func); 
@@ -182,17 +188,102 @@ window.SENTRY_INIT_METHODS["3premote-1h2c-v7"] = {
       if (!'XMLHttpRequest' in window) {
         return;
       }
-      patch_prop(XMLHttpRequest.prototype, 'send', (original) => {
-        return (...args) => { 
-          var xhr = this;
+      patch_prop(XMLHttpRequest.prototype, 'send', function(original) {
+        return function(thisArg, ...args) { 
+          var xhr = thisArg;
           var callback_props = ['onload', 'onerror', 'onprogress', 'onreadystatechange'];
           callback_props.forEach(prop => {
             if (callback_prop in xhr && typeof xhr[callback_prop] === 'function') {
               patch_prop(xhr, callback_prop, wrap_callback(xhr[callback_prop], patch_func));
             }
           });
-          return original.apply(this, args);
+          return original.apply(xhr, args);
         }
+      });
+    }
+
+    const DEFAULT_EVENT_TARGET = [
+      'EventTarget',
+      'Window',
+      'Node',
+      'ApplicationCache',
+      'AudioTrackList',
+      'ChannelMergerNode',
+      'CryptoOperation',
+      'EventSource',
+      'FileReader',
+      'HTMLUnknownElement',
+      'IDBDatabase',
+      'IDBRequest',
+      'IDBTransaction',
+      'KeyOperation',
+      'MediaController',
+      'MessagePort',
+      'ModalWindow',
+      'Notification',
+      'SVGElementInstance',
+      'Screen',
+      'TextTrack',
+      'TextTrackCue',
+      'TextTrackList',
+      'WebSocket',
+      'WebSocketWorker',
+      'Worker',
+      'XMLHttpRequest',
+      'XMLHttpRequestEventTarget',
+      'XMLHttpRequestUpload',
+    ];
+
+    var add_nonenum_prop = function(obj, prop, value) {
+      obj.prototype = obj.prototype || {};
+      Object.defineProperty(obj, prop, {value: value, writable: true, configurable: true});
+    }
+
+    var patch_event_target = function(target, patch_func) {
+      var proto = window[target] && window[target].prototype;
+      if (!proto || !proto.hasOwnProperty || !proto.hasOwnProperty('addEventListener')) {
+        return;
+      }
+
+      patch_prop(proto, 'addEventListener', function (original_add) {
+        return function (thisArg, eventName, fn, options) {
+          // fn can be either function or EventListenerObject
+          try {
+            if (typeof fn.handleEvent === 'function') {
+              fn.handleEvent = wrap_callback(fn.handleEvent, patch_func);
+            }
+          } catch (err) {
+            // can sometimes get 'Permission denied to access property "handle Event'
+          }
+          var wrapped_fn;
+          if (typeof fn === 'function') {
+            wrapped_fn = wrap_callback(fn, patch_func);
+            // So that we can remove it when application calls removeEventListener with original
+            // as argument!
+            try {
+              add_nonenum_prop(fn, '__sentry_micro_wrapped__', wrapped_fn);
+            } catch (x) {}
+          }  
+          return original_add.apply(thisArg, [eventName, wrapped_fn, options]);
+        };
+      });
+
+      // application code only knows about original handler, not the wrapped one
+      // see browser/src/integrations/trycatch.ts
+      patch_prop(proto, 'removeEventListener', function (original_remove) {
+        return function (thisArg, eventName, fn, options) {
+          try {
+            const original_handler = fn;
+            const wrapped_handler = original_handler && original_handler.__sentry_micro_wrapped__;
+            if (wrapped_handler) {
+              original_remove.call(this, eventName, wrapped_handler, options);
+            }
+          } catch (e) {
+            // ignore, accessing __sentry_wrapped__ will throw in some Selenium environments
+          }
+          const never_wrapped_handler = fn;
+          return original_remove.call(thisArg, eventName, never_wrapped_handler, options);
+        };
       });
     }
 
@@ -247,6 +338,7 @@ window.SENTRY_INIT_METHODS["3premote-1h2c-v7"] = {
       patch_set_callback_func(window, 'setInterval', temp_queueing_patch('trycatch'));
       patch_set_callback_func(window, 'requestAnimationFrame', temp_queueing_patch('trycatch'));
       patch_xhr(temp_queueing_patch('trycatch'));
+      DEFAULT_EVENT_TARGET.forEach((t) => patch_event_target(t, temp_queueing_patch('trycatch')));
     }
 
     var patch = function() {
@@ -257,7 +349,7 @@ window.SENTRY_INIT_METHODS["3premote-1h2c-v7"] = {
       patch_set_callback_func(window, 'setInterval', filtering_patch);
       patch_set_callback_func(window, 'requestAnimationFrame', filtering_patch);
       patch_xhr(filtering_patch);
-
+      DEFAULT_EVENT_TARGET.forEach((t) => patch_event_target(t, filtering_patch));
     }
 
     var has_DOMContentLoaded_already_fired = function() {
@@ -301,9 +393,9 @@ window.SENTRY_INIT_METHODS["3premote-1h2c-v7"] = {
 
     var patch_immediately_after_sentry_init = function(patch_func) {
       var orig_sentry_init = Sentry.init;
-      patch_prop(Sentry, 'init', (orig_init) => {
+      patch_prop(Sentry, 'init', function(orig_init) {
         return (...args) => {
-          orig_sentry_init.apply(window, args); // host-sentry init()
+          orig_sentry_init.apply(this, args); // host-sentry init()
           patch_func();
         }
       });
