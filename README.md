@@ -38,9 +38,8 @@ On top of that, components may be owned by:
 [^1]: Since this is a new and evolving space we try, whenever possible, to provide solutions based on basic principles that work regardless of the composition technology.
 
 # Sentry support
-As of August 2022 Sentry offers limited support for the MFE use case, therefore this repository will showcase _current_ solutions, best classified as workarounds. 
+As of August 2022 Sentry does not officially support MFE use case. This repository simply documents current _workarounds_. All included code is intended as example and not meant for production without further review and testing.
 
-3. Loss of `function/file -> Component` mapping and function names during build process  (**lib** architecture).
 ## Current methods
 Below is a list of desired feautres and whether a particular solution supports each. 
 
@@ -120,6 +119,8 @@ The nature of Javascript/browser environment presents significant obstacles to i
 2. Sentry's reliance on **global event handlers** for catching errors in UI and async callbacks (`error`, `unhandledrejection`) as well as auto-instrumenting certain things, for example XHR breadcrumbs. Most **wrapper workarounds** (e.g. [mlmmn](https://github.com/getsentry/sentry-javascript/discussions/5217) or [ScriptedAlchemy](https://scriptedalchemy.medium.com/distributed-logging-in-federated-applications-with-sentry-f4249aa66e20)) forget that part and consequently only correctly route those errors that happen during component initialization when the page is loaded.
 
 	2.1. When using frameworks, e.g. React, errors in component callbacks can be correctly captured using the framework facilities, e.g. React error boundaries. However a lot of the event-based asyncronous code will still rely on globabl event handlers and therefore escape the "walls" of the framework (except in Angular/Zone.js).
+
+3. Loss of `function/file -> Component` mapping and function names during build process  (**lib** architecture).
 
 
 # Sandbox how-to<a name="sandbox"></a>
