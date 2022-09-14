@@ -18,6 +18,7 @@ Not everyone uses the term "micro-frontend". Developers may describe their micro
 
 There are 4 subtypes of this architecture. There is no (fundamental) difference between these 4 types from the browser runtime perspective. However, when it comes to integrating Sentry, each has its own distinct requirements and obstacles:
 
+| --- | --- |
 | remote | lib |
 | 3premote | 3plib |
 
