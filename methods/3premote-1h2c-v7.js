@@ -189,12 +189,12 @@ window.SENTRY_INIT_METHODS["3premote-1h2c-v7"] = {
         return;
       }
       patch_prop(XMLHttpRequest.prototype, 'send', function(original) {
-        return function(thisArg, ...args) { 
-          var xhr = thisArg;
+        return function(...args) { 
+          var xhr = this;
           var callback_props = ['onload', 'onerror', 'onprogress', 'onreadystatechange'];
-          callback_props.forEach(prop => {
-            if (callback_prop in xhr && typeof xhr[callback_prop] === 'function') {
-              patch_prop(xhr, callback_prop, wrap_callback(xhr[callback_prop], patch_func));
+          callback_props.forEach(prop  => {
+            if (prop in xhr && typeof xhr[prop] === 'function') {
+              patch_prop(xhr, prop, wrap_callback(xhr[prop], patch_func));
             }
           });
           return original.apply(xhr, args);
@@ -246,7 +246,7 @@ window.SENTRY_INIT_METHODS["3premote-1h2c-v7"] = {
       }
 
       patch_prop(proto, 'addEventListener', function (original_add) {
-        return function (thisArg, eventName, fn, options) {
+        return function (eventName, fn, options) {
           // fn can be either function or EventListenerObject
           try {
             if (typeof fn.handleEvent === 'function') {
@@ -264,14 +264,14 @@ window.SENTRY_INIT_METHODS["3premote-1h2c-v7"] = {
               add_nonenum_prop(fn, '__sentry_micro_wrapped__', wrapped_fn);
             } catch (x) {}
           }  
-          return original_add.apply(thisArg, [eventName, wrapped_fn, options]);
+          return original_add.apply(this, [eventName, wrapped_fn, options]);
         };
       });
 
       // application code only knows about original handler, not the wrapped one
       // see browser/src/integrations/trycatch.ts
       patch_prop(proto, 'removeEventListener', function (original_remove) {
-        return function (thisArg, eventName, fn, options) {
+        return function (eventName, fn, options) {
           try {
             const original_handler = fn;
             const wrapped_handler = original_handler && original_handler.__sentry_micro_wrapped__;
@@ -282,7 +282,7 @@ window.SENTRY_INIT_METHODS["3premote-1h2c-v7"] = {
             // ignore, accessing __sentry_wrapped__ will throw in some Selenium environments
           }
           const never_wrapped_handler = fn;
-          return original_remove.call(thisArg, eventName, never_wrapped_handler, options);
+          return original_remove.call(this, eventName, never_wrapped_handler, options);
         };
       });
     }
