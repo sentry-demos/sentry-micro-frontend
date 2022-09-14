@@ -5,7 +5,7 @@
  *       by each [h] and [m] may execute in any order
  */  
 import {dynamic_load_sentry, fool_isNativeFetch} from './dynamic_load_sentry.js'
-import {sticky_select_init, sticky_checkbox_init, add_project_link} from './src/common.js';
+import {sticky_select_init, sticky_checkbox_init, add_project_link, sticky_checkbox_get} from './src/common.js';
 import * as ErrorControls from './src/error_controls.js' ;
 import {micro_init} from './micro.js';
 
@@ -37,9 +37,12 @@ fool_isNativeFetch();
 let module = "host";
 
 /* --> [host] Sentry initialized here <-- */
-await dynamic_load_sentry(module);
-
-fool_isNativeFetch();
+if (sticky_checkbox_get("host_sentry_enabled")) {
+  await dynamic_load_sentry(module);
+  fool_isNativeFetch();
+} else {
+  console.log(`[${module}] Sentry not loaded (see UI checkbox).`);
+}
 
 /* --> [host] application initialized here <-- */
 if (
