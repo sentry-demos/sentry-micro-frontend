@@ -53,20 +53,16 @@ window.SENTRY_INIT_METHODS["3premote-1h2c-v7"] = {
       // this disables temp queueing hanlders, must be done before calling window.onerror() 
       delete window.__SENTRY_MICRO__.error_queue; 
       for (const [type, args] of errors) {
-        let [micro, error] = match_and_extract(...args);
-        if (micro) {
+        try {
+          delete error.__sentry_captured__; // see temp_queueing_patch()
+        } catch (x) {}
 
-          try {
-            delete error.__sentry_captured__; // see temp_queueing_patch()
-          } catch (x) {}
-
-          if (type === 'error') {
-            window.onerror.apply(window, args);
-          } else if (type === 'unhandledrejection') {
-            window.onunhandledrejection.apply(window, args);
-          } else { // type === 'trycatch'
-            capture(micro, error);
-          }
+        if (type === 'error') {
+          window.onerror.apply(window, args);
+        } else if (type === 'unhandledrejection') {
+          window.onunhandledrejection.apply(window, args);
+        } else { // type === 'trycatch'
+          throw error;
         }
       }
     }
@@ -135,8 +131,9 @@ window.SENTRY_INIT_METHODS["3premote-1h2c-v7"] = {
         if (eq) {
           eq.push([eventType, args]);
           let [micro, error] = match_and_extract(...args);
+          let captured = undefined;
           try {
-            let captured = error.__sentry_captured__;
+            captured = error.__sentry_captured__;
           } catch (x) {}
           if (captured) {
             // host-sentry is initialized and this is the first error captured. If this error 
@@ -323,9 +320,8 @@ window.SENTRY_INIT_METHODS["3premote-1h2c-v7"] = {
             if (micro) {
               event.release = micro.client._options.release;
               micro.client.captureEvent(event);
-              return null;
             }
-            return event;
+            return null; // host error, don't care
           }
       });
     }
@@ -433,6 +429,7 @@ window.SENTRY_INIT_METHODS["3premote-1h2c-v7"] = {
           if (is_sentry_initialized()) {
             micro_init(); // if not already, see temp_queueing_patch() and patch_immediately...
           } else {
+            init_micro_client();
             normal_filtering_sentry_init(orig_sentry_init ? orig_sentry_init : Sentry.init);
             process_queued_errors();
             // TODO what if host wakes up from coma and calls Sentry.init() after this? should 
