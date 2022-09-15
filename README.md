@@ -51,6 +51,7 @@ Below is a list of desired feautres and whether a particular method supports eac
 
 | Feature support / Method | [lib-1h2c](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/lib-1h2c-v6.js) | [remote-1h2c](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/remote-1h2c-v6v7.js) | [WrapALL](#wrapall-method) | [3premote-1h2c](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/3premote-1h2c-v7.js)|
 | ------------------------ | ---------------- | ---- | ---- | ---- |
+| Supported use cases                       | lib | remote | lib<br />3plib<br />remote<br /> 3premote | remote<br />3premote<br />[(3p)lib?]() |
 | Auto-assign to `micro` team               | **yes**  | **yes**  | **yes** | **yes** |
 | Separate projects, quotas                 | **yes**  | **yes**  | **yes** | **yes** |
 | Source mapping `micro`                    | [**yes (tricky)***](#-source-mapping-lib)  | **yes**  | **yes** | **yes** | 
@@ -65,9 +66,10 @@ Below is a list of desired feautres and whether a particular method supports eac
 | Supports multiple `micro` components      | not impl. | not impl. | **yes** | ? |
 | Requires broad application code changes	| no | no | **yes** | no |
 
-- *not impl. = possible, but not implemented yet*
-- *no = not feasible with this approach*
-- *`1h2c` stands for: one `Sentry.Hub`, two `Sentry.BrowserClient`'s. As opposed to creating multiple hubs.
+- ***not impl.** = possible, but not implemented yet*
+- ***no** = not feasible with this approach*
+- ***?** = feasibility has not been evaluated yet*
+- ***1h2c** stands for: one `Sentry.Hub`, two `Sentry.BrowserClient`'s. As opposed to creating multiple hubs.
 
 ### * Source mapping (lib)
 A **lib**-type `micro` can potentially have multiple `host` applications consuming it. Each `host` might use a different minification algorithm, serve `micro` code at different URL path or even bundle it together with other code into one big `.js` file. Naturally it is the responsibility of the `host` team to upload their source mappings during their build process, because `micro` team simply doesn't possess the information to generate those mappings. Source maps are associated with and uploaded for each individual release, each file can have only one mapping in a given release. This leaves room for a few options:
