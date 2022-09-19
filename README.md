@@ -57,17 +57,18 @@ Below is a list of desired feautres and whether a particular method supports eac
 | Supports SDK v6                           | yes | yes | yes | ? |
 | Auto-assign to `micro` team               | **yes**  | **yes**  | **yes** | **yes** |
 | Separate projects, quotas                 | **yes**  | **yes**  | **yes** | **yes** |
-| Source mapping `micro`                    | [**yes (tricky)***](#-source-mapping-lib)  | **yes**  | **yes** | **yes** | 
+| Source mapping `micro`                    | [**yes (tricky)***](#-source-mapping-lib)  | **yes**  | **yes** | [**yes*****](#-flex-minimal-error-leakage) | 
 | No errors leak out of `micro` into `host` | **yes**  | **yes**  | **yes** | **yes** |
+| Performance for `host`                    | **yes**  | **yes** | **yes** | **yes** |
 | Separate breadcrumbs, tags, context       | no | no  | no | no |
 | React support                             | not impl. | not impl. | not impl. | not impl. |
-| Performance for `host`                        | **yes**  | **yes** | **yes** | **yes** |
-| Performance: `host`-only spans in `host`  | no | no | no | no |
-| Performance for`micro`                       | no | no | no | no |
 | Code change needed in `host`              | custom | **generic** | **none** | **none** |
 | Works if `host` doesn't use Sentry        | [no**](#-no-host-sentry) | [no**](#-no-host-sentry) | [no**](#-no-host-sentry) | **yes** |
+| OK if `micro` init before`host` Sentry loaded | [no**](#-no-host-sentry) | [no**](#-no-host-sentry) | [no**](#-no-host-sentry) | **yes** |
 | Supports multiple `micro` components      | not impl. | not impl. | **yes** | ? |
-| Requires broad application code changes	| no | no | **yes** | no |
+| Requires broad application code changes	  | no | no | **yes** | no |
+| Performance: `host`-only spans in `host`  | no | no | no | no |
+| Performance for`micro`                    | no | no | no | no |
 
 - ***not impl.** = possible, but not implemented yet*
 - ***no** = not feasible with this approach*
@@ -126,6 +127,9 @@ req.addEventListener("load", sentry_wrap(() => {
 req.open("GET", "http://www.example.org/example.txt");
 req.send();
 ```
+
+### \*\*\* Flex: minimal error leakage
+In one unlikely circumstance `flex-micro.js` will leak the very first error into `host` project/DSN. This will happen if (1) at the time of `micro`'s initialization `host`-Sentry has not only not been initialized yet but the SDK hasn't even been loaded. In that situation whe can not detect the exact moment Sentry.init() is called and only detect it when 1 error may have already been incorrectly reported to `host`. (TODO: would it be possible to patch `onload` events of all <script> elements on the page to detect that?).
 
 ## Fundamental technical challenges
 The nature of Javascript/browser environment presents significant obstacles to implementing first class support of MFEs in Sentry SDK. 
