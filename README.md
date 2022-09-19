@@ -44,12 +44,13 @@ As of August 2022 Sentry does not officially support MFE use case.
 
 See [Fundamental technical challenges](#fundamental-technical-challenges) to understand why.
 
-This repository documents current workarounds (aka methods). All the code included in this repository is intended as example only and should NOT be adopted for use in production software, since it has not undergone a rigorous review and testing process.
+This repository documents current workarounds (aka methods). 
 
 ## Current methods
-Below is a list of desired feautres and whether a particular method supports each.
 
-| Feature support / Method | [simple-lib.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/simple-lib.js) | [simple-remote.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/simple-remote.js) | [WrapALL](#wrapall-method) | [flex-micro.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/flex-micro.js)|
+All the code included in this repository is intended as example/reference only and should NOT be adopted for use in production software, since it has not undergone a rigorous review and testing process.
+
+| Feature support and limitations | [simple-lib.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/simple-lib.js) | [simple-remote.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/simple-remote.js) | [WrapALL](#wrapall-method) | [flex-micro.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/flex-micro.js)|
 | ------------------------ | ---------------- | ---- | ---- | ---- |
 | Supported use cases                       | lib | remote | lib<br />3plib<br />remote<br /> 3premote | remote<br />3premote |
 | Recommended for use case                  | lib | - | 3premote | remote |
