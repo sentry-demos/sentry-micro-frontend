@@ -79,8 +79,9 @@ All the code included in this repository is intended as example/reference only a
 ### * Source mapping (lib)
 A **lib**-type `micro` can potentially have multiple `host` applications consuming it. Each `host` might use a different minification algorithm, serve `micro` code at different URL path or even bundle it together with other code into one big `.js` file. Naturally it is the responsibility of the `host` team to upload their source mappings during their build process, because `micro` team simply doesn't possess the information to generate those mappings. Source maps are associated with and uploaded for each individual release, each file can have only one mapping in a given release. This leaves room for a few options:
 
-* Option 1 (recommended - less things can go wrote)
-	* Each `host` build process registers its own releases of `micro` using Sentry API in the following format `v2.0.1.host1`. Then micro team can filter issues with a glob in the Sentry UI `v2.0.1.*`.
+* Option 1 (recommended - less things can go wrong)
+	* Each `host` build process registers its own releases of `micro` using Sentry API ~~in the following format `v2.0.1.host1`. Then micro team can filter issues with a glob in the Sentry UI `v2.0.1.*`.~~
+    * Look into `dist` flag:  [docs/sourcemaps/troubleshooting](https://docs.sentry.io/platforms/javascript/sourcemaps/troubleshooting_js/#verify-artifact-distribution-value-matches-value-configured-in-your-sdk) and [docs/cli/releases/--dist](https://docs.sentry.io/product/cli/releases/#:~:text=%2D%2Ddist,a%20single%20release.)
 * Option 2 
 	* Component owners (teams) make a contract to serve `micro` at a defined URL path, separate from all other code.
 	* Additionally (assuming build toolchain supports this) `micro` ships pre-transpiled/minified.
