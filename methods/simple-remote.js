@@ -9,7 +9,7 @@ import './init.js';
  * team's build process, please checkout methods/lib-* and methods/3plib-*
  */
 
-window.SENTRY_INIT_METHODS["remote-1h2c-v6v7"] = {
+window.SENTRY_INIT_METHODS["simple-remote"] = {
   
   // no wrapping inside [micro] is necessary
   micro_internal_wrapper: null, 

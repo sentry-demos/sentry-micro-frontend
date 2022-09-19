@@ -12,7 +12,7 @@ import {default_host_init} from './init.js';
  * process, then you should use other methods prefixed with 'lib-'
  */
 
-window.SENTRY_INIT_METHODS["3premote-1h2c-v7"] = {
+window.SENTRY_INIT_METHODS["flex-micro"] = {
 
   micro_sandbox_dont_load_script: true, // by sandbox only
   

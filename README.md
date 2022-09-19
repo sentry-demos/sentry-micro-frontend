@@ -49,9 +49,12 @@ This repository documents current workarounds (aka methods). All the code includ
 ## Current methods
 Below is a list of desired feautres and whether a particular method supports each.
 
-| Feature support / Method | [lib-1h2c](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/lib-1h2c-v6.js) | [remote-1h2c](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/remote-1h2c-v6v7.js) | [WrapALL](#wrapall-method) | [3premote-1h2c](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/3premote-1h2c-v7.js)|
+| Feature support / Method | [simple-lib.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/simple-lib.js) | [simple-remote.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/simple-remote.js) | [WrapALL](#wrapall-method) | [flex-micro.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/flex-micro.js)|
 | ------------------------ | ---------------- | ---- | ---- | ---- |
 | Supported use cases                       | lib | remote | lib<br />3plib<br />remote<br /> 3premote | remote<br />3premote |
+| Recommended for use case                  | lib | - | 3premote | remote |
+| Supports SDK v7                           | yes | yes | yes | yes |
+| Supports SDK v6                           | yes | yes | yes | ? |
 | Auto-assign to `micro` team               | **yes**  | **yes**  | **yes** | **yes** |
 | Separate projects, quotas                 | **yes**  | **yes**  | **yes** | **yes** |
 | Source mapping `micro`                    | [**yes (tricky)***](#-source-mapping-lib)  | **yes**  | **yes** | **yes** | 
@@ -82,7 +85,7 @@ A **lib**-type `micro` can potentially have multiple `host` applications consumi
 	* `micro` team uploads their own source mappings.
 
 ### ** No host Sentry
-The problem here is how do you know for sure that `host` is never loading Sentry or just didn't have a chance yet. You can have a timeout but then either delay `micro`'s widgets own initialization or miss on reporting errors that occur while you waiting. In [3premote-1h2c it is handled by patching temporary queueing handlers](https://github.com/realkosty/sentry-micro-frontend/blob/94ef7b374fb939b73a6d6b9b4f5c742114e2c7fd/methods/3premote-1h2c-v7.js#L433) but at that point you could as well implement the entire `3premote-1h2c`.
+The problem here is how do you know for sure that `host` is never loading Sentry or just didn't have a chance yet. You can have a timeout but then either delay `micro`'s widgets own initialization or miss on reporting errors that occur while you waiting. In [3premote-1h2c it is handled by patching temporary queueing handlers](https://github.com/realkosty/sentry-micro-frontend/blob/94ef7b374fb939b73a6d6b9b4f5c742114e2c7fd/methods/flex-micro.js#L433) but at that point you could as well implement the entire `3premote-1h2c`.
 
 ### WrapALL method
 This method may be the best choice for **3premote** use case, because of its simplicity and the fact that it works without any change to the host-application code. The idea is to simply wrap all of `micro`'s entry points (including event handlers, anonymous function callbacks, etc.) in `try-catch` statements and then use a separate instance of Sentry client to report the errors to the right DSN/project. 
@@ -152,5 +155,5 @@ Finally, open http://localhost:8000/
 
 Sandbox sets `mv` tag on all events sent to Sentry which is `<module>@<SDK version>`, for example:
 
-```mv:lib-1h2c-v6v7@7.11.1```
+```mv:simple-libv7@7.11.1```
 

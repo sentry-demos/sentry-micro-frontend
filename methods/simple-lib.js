@@ -8,7 +8,7 @@ import './init.js';
  * component deployed independently of the [host] application check out methods/remote-*
  */
 
-window.SENTRY_INIT_METHODS["lib-1h2c-v6"] = {
+window.SENTRY_INIT_METHODS["simple-lib"] = {
   
   // no wrapping inside [micro] is necessary
   micro_internal_wrapper: null, 
