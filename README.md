@@ -48,7 +48,7 @@ This repository documents current workarounds (aka methods).
 
 ## Current methods
 
-All the code included in this repository is intended as example/reference only and should NOT be adopted for use in production software, since it has not undergone a rigorous review and testing process.
+All the code included in this repository is intended as example only and should NOT be adopted for use in production software without first undergoing full review and rigorous testing. This code is provided on an "AS-IS" basis without warranty of any kind, either express or implied, including without limitation any implied warranties of condition, uninterrupted use, merchantability, fitness for a particular purpose, or non-infringement. The details of your application or component, the architecture of the host-application, and your target browser support, among many other things, and may require you to modify this reference code. Issues regarding these code examples should be submitted through GitHub.
 
 | Feature support and limitations | [simple-lib.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/simple-lib.js) | [simple-remote.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/simple-remote.js) | [WrapALL](#wrapall-method) | [flex-micro.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/flex-micro.js)|
 | ------------------------ | ---------------- | ---- | ---- | ---- |
