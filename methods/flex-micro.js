@@ -5,9 +5,9 @@ import {default_host_init} from './init.js';
  * testing. This code is provided on an "AS-IS" basis without warranty of any kind, either 
  * express or implied, including without limitation any implied warranties of condition, 
  * uninterrupted use, merchantability, fitness for a particular purpose, or non-infringement.
- * The details of your application or component, the architecture of the host-application, 
- * and your target browser support, among many other things, and may require you to modify 
- * this reference code. Issues regarding these code examples should be submitted through GitHub.
+ * The details of your application or component, architecture of the host-application, and 
+ * your target browser support, among many other things, may require you to modify this code.
+ * Issues regarding these code examples should be submitted through GitHub.
  *
  * This is intended for 'remote' use-case (see README.md). If your component is packaged as a
  * dependency (npm, yarn) and built, bundled and deployed as part of host-application's build
