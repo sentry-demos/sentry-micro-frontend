@@ -64,7 +64,7 @@ All the code included in this repository is intended as example only and should 
 | Works if more than 1 MICRO-component      | not impl. | not impl. | **yes** | ? |
 | Code change needed in HOST              | **yes, custom** | **yes, generic** | no | no |
 | Requires broad application code changes   | no | no | **yes,<br />in micro** | no |
-| Separate breadcrumbs, tags, context       | no | no  | no | no |
+| Separate breadcrumbs, tags, context       | no | no  | **possibly,**<br />with [mlmmn's code](https://github.com/getsentry/sentry-javascript/discussions/5217)<br />(not tested) | no |
 | React support                             | not impl. | not impl. | not impl. | not impl. |
 | Performance (see footnote †)                | `H,M->Hp 0->Mp` | `H,M->Hp 0->Mp` | `H,M->Hp 0->Mp` | `H,M->Hp 0->Mp` |
 
