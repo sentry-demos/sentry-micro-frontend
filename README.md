@@ -53,28 +53,25 @@ All the code included in this repository is intended as example only and should 
 | Feature support and limitations | [simple-lib.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/simple-lib.js) | [simple-remote.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/simple-remote.js) | [WrapALL](#wrapall-method) | [flex-micro.js](https://github.com/realkosty/sentry-micro-frontend/blob/main/methods/flex-micro.js)|
 | ------------------------ | ---------------- | ---- | ---- | ---- |
 | Supported use cases                       | lib | remote | lib<br />3plib<br />remote<br /> 3premote | remote<br />3premote |
-| Recommended for use case                  | lib | - | 3premote | remote |
-| Supports SDK v7                           | yes | yes | yes | yes |
-| Supports SDK v6                           | yes | yes | yes | ? |
-| Auto-assign to `micro` team               | **yes**  | **yes**  | **yes** | **yes** |
-| Separate projects, quotas                 | **yes**  | **yes**  | **yes** | **yes** |
-| Source mapping `micro`                    | [**yes (tricky)***](#-source-mapping-lib)  | **yes**  | **yes** | [**yes*****](#-flex-minimal-error-leakage) | 
-| No errors leak out of `micro` into `host` | **yes**  | **yes**  | **yes** | **yes** |
-| Performance for `host`                    | **yes**  | **yes** | **yes** | **yes** |
+| Recommended for use case                  | lib | - | 3premote<br />remote (2+ MICROs) | remote (1 MICRO) |
+| Sentry SDK support                        | v7, v6 | v7, v6 | v7, v6 | v7, (v6?) |
+| Separate projects                 	    | **yes**  | **yes**  | **yes** | **yes** |
+| No errors leak from MICRO<br />into HOST project | **yes**  | **yes**  | **yes** | [**yes*****](#-flex-minimal-error-leakage) |
+| Source mapping MICRO                    | [**yes (tricky)***](#-source-mapping-lib)  | **yes**  | **yes** | **yes** | 
+| Works if `host` doesn't use Sentry        | [no**](#-no-host-sentry) | [no**](#-no-host-sentry) | [no**](#-no-host-sentry) | **yes** |
+| Works if MICRO initialized<br />before HOST Sentry loaded | [no**](#-no-host-sentry) | [no**](#-no-host-sentry) | [no**](#-no-host-sentry) | **yes** |
+| Works if MICRO and HOST use<br />different versions of Sentry | no,<br />might break | no,<br />might break | no,<br />might break | **yes, defers to<br />HOST version** |
+| Works if more than 1 MICRO-component      | not impl. | not impl. | **yes** | ? |
+| Code change needed in HOST              | **yes, custom** | **yes, generic** | no | no |
+| Requires broad application code changes   | no | no | **yes,<br />in micro** | no |
 | Separate breadcrumbs, tags, context       | no | no  | no | no |
 | React support                             | not impl. | not impl. | not impl. | not impl. |
-| Code change needed in `host`              | custom | **generic** | **none** | **none** |
-| Works if `host` doesn't use Sentry        | [no**](#-no-host-sentry) | [no**](#-no-host-sentry) | [no**](#-no-host-sentry) | **yes** |
-| OK if `micro` init before`host` Sentry loaded | [no**](#-no-host-sentry) | [no**](#-no-host-sentry) | [no**](#-no-host-sentry) | **yes** |
-| Supports multiple `micro` components      | not impl. | not impl. | **yes** | ? |
-| Requires broad application code changes	  | no | no | **yes** | no |
-| Performance: `host`-only spans in `host`  | no | no | no | no |
-| Performance for`micro`                    | no | no | no | no |
+| Performance (see footnote †)                | `H,M->Hp 0->Mp` | `H,M->Hp 0->Mp` | `H,M->Hp 0->Mp` | `H,M->Hp 0->Mp` |
 
 - ***not impl.** = possible, but not implemented yet*
 - ***no** = not feasible with this approach*
 - ***?** = feasibility has not been evaluated yet*
-- ***1h2c** stands for: one `Sentry.Hub`, two `Sentry.BrowserClient`'s. As opposed to creating multiple hubs.
+- **† `H,M->Hp 0->Mp`** means HOST transactions/spans (H) and MICRO transactions/spans (M) go into Host-project, nothing (0) send to Micro-project (Mp)
 
 ### * Source mapping (lib)
 A **lib**-type `micro` can potentially have multiple `host` applications consuming it. Each `host` might use a different minification algorithm, serve `micro` code at different URL path or even bundle it together with other code into one big `.js` file. Naturally it is the responsibility of the `host` team to upload their source mappings during their build process, because `micro` team simply doesn't possess the information to generate those mappings. Source maps are associated with and uploaded for each individual release, each file can have only one mapping in a given release. This leaves room for a few options:
@@ -88,7 +85,7 @@ A **lib**-type `micro` can potentially have multiple `host` applications consumi
 	* `micro` team uploads their own source mappings.
 
 ### ** No host Sentry
-The problem here is how do you know for sure that `host` is never loading Sentry or just didn't have a chance yet. You can have a timeout but then either delay `micro`'s widgets own initialization or miss on reporting errors that occur while you waiting. In [3premote-1h2c it is handled by patching temporary queueing handlers](https://github.com/realkosty/sentry-micro-frontend/blob/94ef7b374fb939b73a6d6b9b4f5c742114e2c7fd/methods/flex-micro.js#L433) but at that point you could as well implement the entire `3premote-1h2c`.
+The problem here is how do you know for sure that `host` is never loading Sentry or just didn't have a chance yet. You can have a timeout but then either delay `micro`'s widgets own initialization or miss on reporting errors that occur while you waiting. In [flex-micro.js it is handled by patching temporary queueing handlers](https://github.com/realkosty/sentry-micro-frontend/blob/94ef7b374fb939b73a6d6b9b4f5c742114e2c7fd/methods/flex-micro.js#L433) but at that point you could as well implement the entire `flex-micro`.
 
 ### WrapALL method
 This method may be the best choice for **3premote** use case, because of its simplicity and the fact that it works without any change to the host-application code. The idea is to simply wrap all of `micro`'s entry points (including event handlers, anonymous function callbacks, etc.) in `try-catch` statements and then use a separate instance of Sentry client to report the errors to the right DSN/project. 
