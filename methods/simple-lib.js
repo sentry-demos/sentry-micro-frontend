@@ -20,7 +20,7 @@ window.SENTRY_INIT_METHODS["simple-lib"] = {
   
   // This goes into [host] application's code
   init_host_sentry:  function(tracing, debug, initialScope) {
-                Sentry.init({
+                  Sentry.init({
                     dsn: HOST_DSN,
                     release: HOST_RELEASE,
                     debug: debug,
@@ -38,7 +38,7 @@ window.SENTRY_INIT_METHODS["simple-lib"] = {
                        * For this to work the [host] team will most likely need to modify their build
                        * process to preserve information necessary to identify [micro]'s code.
                        */
-                      let MICRO_STACK_REGEX = /\/micro(\.min)?\.js/; 
+                      let MICRO_STACK_REGEX = /http[s]?:\/\/(localhost:8000|(www\.)?sentry-micro-frontend\.net)(\/.*)?\/micro(\.min)?\.js/;
 
                       let stack = hint.originalException.stack || hint.syntheticException.stack;
                       if (stack.match(MICRO_STACK_REGEX)) {
@@ -49,8 +49,8 @@ window.SENTRY_INIT_METHODS["simple-lib"] = {
                       }
                       return event;
                     }
-                });
-              },
+                  });
+                },
 
   /* This goes into [micro]'s code
    *

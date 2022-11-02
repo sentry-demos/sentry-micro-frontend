@@ -70,7 +70,7 @@ window.SENTRY_INIT_METHODS["simple-remote"] = {
     /* TODO replace "micro" with unique module name, e.g. "CheckoutComponent" */
     window.__SENTRY_MICRO__.instances["micro"] = { 
       // [micro] team supplies matcher based on origin URL and filename of their component
-      matcher: /http[s]?:\/\/(localhost:8000|(www\.)?sentry-micro-frontend\.net)\/micro.js/,
+      matcher: /http[s]?:\/\/(localhost:8000|(www\.)?sentry-micro-frontend\.net)(\/.*)?\/micro(\.min)?\.js/,
       client: new Sentry.BrowserClient({
         dsn: MICRO_DSN,
         release: MICRO_RELEASE,

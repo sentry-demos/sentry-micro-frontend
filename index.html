@@ -3,65 +3,46 @@
 <!-- only for Google Cloud Storage, will break local -->
 <head>
 	<title>sentry-micro-frontend Sandbox</title>
-  <link rel="stylesheet" href="src/monolith.css">
+  <link rel="stylesheet" href="common.css">
 </head>
 <body>
-  <h1 class="demo_name">sentry-micro-frontend Sandbox</h1>
+  <h1 class="demo_name">Sentry MFE</h1>
   <a target="_blank" href="https://github.com/realkosty/sentry-micro-frontend">(github)</a>
-  <label for="method">Sentry init: </label>
-  <select name="method" id="method">
-    <option value="simple-lib">simple-lib.js (<- recommended)</option>
-    <option value="simple-remote">simple-remote.js (<- recommended)</option>
-    <option value="flex-micro">flex-micro.js (experimental)</option>
-    <option value="lib-1h2c-wrap-v6">lib-1h2c-wrap-v6.js (fwiw)</option>
-    <option value="lib-1h2c-auto-v6" disabled>lib-1h2c-auto-v6.js (not impl yet)</option>
-    <option value="lib-1h2c-beacon-v6" disabled>lib-1h2c-beacon-v6.js (broken)</option>
-    <option value="naive" disabled>naive.js (broken)</option>
-    <option value="mlmmn-v6" disabled>mlmmn-v6.js (broken)</option>
-    <option value="mlmmn-v7"disabled>mlmmn-v7.js (broken)</option>
-  </select>
-  <label for="ssv">SDK version: </label>
-  <select name="ssv" id="sentry_sdk_version">
-    <option value="7.11.1">7.11.1 (CDN bundle.tracing)</option>
-    <option value="6.19.6">6.19.6 (CDN bundle.tracing)</option>
-    <option value="5.5.0">5.5.0 (CDN bundle)</option>
-  </select>
-  <input type="checkbox" id="host_sentry_enabled" name="lhs"><label for="lhs">[host] Sentry</label>
-  <input type="checkbox" id="micro_sentry_enabled" name="lms"><label for="lms">[micro] Sentry</label>
-  <input type="checkbox" id="sentry_sdk_min_js" name="ssmj"><label for="ssmj">Sentry SDK .min.js</label>
-  <input type="checkbox" id="host_sentry_tracing" name="hst"><label for="hst">[H] tracing</label>
-  <input type="checkbox" id="micro_sentry_tracing" name="mst"><label for="mst">[M] tracing</label>
-  <input type="checkbox" id="host_sentry_debug" name="hsd"><label for="hsd">[H] debug</label>
-  <input type="checkbox" id="micro_sentry_debug" name="msd"><label for="msd">[M] debug</label>
-  
-  <script type="text/javascript" src="env.js"></script>
-  <script type="module" src="src/common.js"></script>
-  <script type="module" src="methods/init.js"></script>
-  <script type="module" src="methods/naive.js"></script>
-  <script type="module" src="methods/lib-1h2c-wrap-v6.js"></script>
-  <!--<script type="module" src="methods/lib-1h2c-funcname-v6.js"></script>-->
-  <script type="module" src="methods/mlmmn-v6.js"></script>
-  <script type="module" src="methods/mlmmn-v7.js"></script>
-  <script type="module" src="methods/simple-lib.js"></script>
-  <script type="module" src="methods/simple-remote.js"></script>
-  <script type="module" src="methods/flex-micro.js"></script>
-  <script type="module" src="methods/lib-1h2c-beacon-v6.js"></script>
-  <script type="module" src="micro.js"></script>
 
-  <!-- Application entry point 
-       Everything happens here -->
-  <script type="module" src="host.js"></script>
-  
-  <div class="module_root" id="host">
+  <span id="topbar">
+    <label for="sandbox-select">Sandbox: </label>
+    <select name="sandbox-select" id="sandbox-select">
+      <option value="sandbox-static">static</option>
+    </select>
 
-    <!-- Host content dynamically inserted here -->
+    <label for="method">method: </label>
+    <select name="method" id="method">
+      <option value="simple-lib">simple-lib.js</option>
+      <option value="simple-remote">simple-remote.js</option>
+      <option value="flex-micro">flex-micro.js (experimental)</option>
+      <option value="naive" disabled>naive.js (broken, for demonstration)</option>
+    </select>
+    
+    <label for="ssv">SDK: </label>
+    <select name="ssv" id="sentry_sdk_version">
+      <option value="7.11.1/bundle.tracing.js">7.11.1/bundle.tracing.js (CDN)</option>
+      <option value="7.11.1/bundle.tracing.min.js">7.11.1/bundle.tracing.min.js (CDN)</option>
+      <option value="6.19.6/bundle.tracing.js">6.19.6/bundle.tracing.js (CDN)</option>
+      <option value="5.5.0/bundle.js">5.5.0/bundle.js (CDN)</option>
+    </select>
+  </span>
 
-    <div id="micro_mount_point">
-      <!-- *** host.js mounts micro-frontend here *** -->
-    </div>
+  <iframe id="sandbox" width="100%" height="100%" src=""></iframe>
 
-  </div> 
+  <script type="module" src="./common.js"></script>
 
-
+  <script type="module">
+    import * as Com from './common.js';
+    Com.sticky_select_init("sandbox-select", "sandbox-static");
+    let sandbox = Com.sticky_select_get("sandbox-select");
+    let iframe = document.querySelector(`#sandbox`);
+    iframe.src = sandbox + "/";
+    Com.sticky_select_init("method", "simple-lib");
+    Com.sticky_select_init("sentry_sdk_version", "7.11.1/bundle.tracing.js");
+  </script>
 </body>
-

@@ -38,7 +38,7 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
     // unique name of micro component, e.g. 'VideoPlayer' or 'ShoppingCart'
     component_name = 'micro', 
     // regex matching origin URL and filename of micro component
-    stack_matcher = /http[s]?:\/\/(localhost:8000|(www\.)?sentry-micro-frontend\.net)\/micro.js/
+    stack_matcher = /http[s]?:\/\/(localhost:8000|(www\.)?sentry-micro-frontend\.net)(\/.*)?\/micro(\.min)?\.js/,
     )  {
     
     var is_sentry_sdk_loaded = function() {

@@ -1,9 +1,22 @@
 /* Real micro-frontend would have its own CSS but we are lazy */
 
+iframe#sandbox {
+  position: fixed;
+  top: 2.5em; 
+  bottom: 0px;
+  right: 0px;
+  width: 100%;
+  border-top: 1px solid rgb(245, 84, 89);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  z-index: 999999;
+  height: 100%;
+}
 .error_controls {
   width:fit-content;
   margin: auto;
-  padding: 0.8em 0.8em 0 0.8em;
+  padding: 1.5em 1.5em 0 1.5em;
   text-align: left;
 }
 
@@ -20,7 +33,7 @@
   #box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
 }
 
-#host .module_title {
+#host .module_header {
   background-color: #2f1937;
   color: white;
 }
@@ -38,7 +51,7 @@
 #micro_mount_point {
   flex-grow: 1;
 }
-#micro .module_title {
+#micro .module_header {
   background-color: rgb(245, 84, 89);
   color: white;
 }
@@ -57,6 +70,10 @@ body {
   font-family: Rubik,Avenir Next,Helvetica Neue,sans-serif;
 }
 
+iframe#sandbox body {
+  margin: 0px;
+}
+
 .demo_name,.sdk_version {
   color: rgb(245, 84, 89);
   font-size: large;
@@ -66,18 +83,27 @@ body {
 label {
   white-space: nowrap;
 }
-label[for=method],label[for=ssv],label[for=lms],label[for=lhs] {
-  font-weight: bold;
-}
-label[for=method],label[for=ssv],#host_sentry_enabled,#micro_sentry_enabled,#host_sentry_tracing,#sentry_sdk_min_js {
+
+#topbar label {
+  font-family:Verdana, Geneva, Tahoma, sans-serif;
   margin-left: 2em;
 }
-.sentry_project,#micro_sentry_tracing,#host_sentry_debug,#micro_sentry_debug {
+.sentry_project,.component_sentry_controls input {
   margin-left: 1em;
 }
-.sentry_project,label[for=hst],label[for=mst],label[for=hsd],label[for=msd] {
+.sentry_project {
+  color:rgb(242, 183, 18);
+}
+
+.component_sentry_controls {
+  float: right;
+  margin-right: 1em;
+}
+.component_sentry_controls * {
+  vertical-align: middle;
   font-size: smaller;
 }
+
 .sdk_version {
   float: right;
 }
