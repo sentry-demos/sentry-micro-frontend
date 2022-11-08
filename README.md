@@ -64,7 +64,7 @@ All the code included in this repository is intended as example only and should 
 | Works if more than 1 MICRO-component      | not impl. | not impl. | **yes** | ? |
 | Code change needed in HOST              | **yes, custom** | **yes, generic** | no | no |
 | Requires broad application code changes   | no | no | **yes,<br />in micro** | no |
-| Separate breadcrumbs, tags, context       | no | no  | **possibly,**<br />with [mlmmn's code](https://github.com/getsentry/sentry-javascript/discussions/5217)<br />(not tested) | no |
+| Separate breadcrumbs, tags, context       | **possibly,**<br />see [mlmmn's code](https://github.com/getsentry/sentry-javascript/discussions/5217#discussioncomment-2898004) | **possibly,**<br />see [mlmmn's code](https://github.com/getsentry/sentry-javascript/discussions/5217#discussioncomment-2898004) | **possibly,**<br />see [mlmmn's code](https://github.com/getsentry/sentry-javascript/discussions/5217#discussioncomment-2898004) | **possibly,**<br />see [mlmmn's code](https://github.com/getsentry/sentry-javascript/discussions/5217#discussioncomment-2898004) |
 | React support                             | not impl. | not impl. | not impl. | not impl. |
 | Performance (see footnote †)                | `H,M->Hp 0->Mp` | `H,M->Hp 0->Mp` | `H,M->Hp 0->Mp` | `H,M->Hp 0->Mp` |
 
@@ -74,7 +74,7 @@ All the code included in this repository is intended as example only and should 
 - **† `H,M->Hp 0->Mp`** means HOST transactions/spans (H) and MICRO transactions/spans (M) go into Host-project, nothing (0) send to Micro-project (Mp)
 
 ### * Source mapping (lib)
-A **lib**-type `micro` can potentially have multiple `host` applications consuming it. Each `host` might use a different minification algorithm, serve `micro` code at different URL path or even bundle it together with other code into one big `.js` file. Naturally it is the responsibility of the `host` team to upload their source mappings during their build process, because `micro` team simply doesn't possess the information to generate those mappings. Source maps are associated with and uploaded for each individual release, each file can have only one mapping in a given release. This leaves room for a few options:
+(this is not needed for true, remote, MFEs) A **lib**-type `micro` can potentially have multiple `host` applications consuming it. Each `host` might use a different minification algorithm, serve `micro` code at different URL path or even bundle it together with other code into one big `.js` file. Naturally it is the responsibility of the `host` team to upload their source mappings during their build process, because `micro` team simply doesn't possess the information to generate those mappings. Source maps are associated with and uploaded for each individual release, each file can have only one mapping in a given release. This leaves room for a few options:
 
 * Option 1 (recommended - less things can go wrong)
 	* Each `host` build process registers its own releases of `micro` using Sentry API ~~in the following format `v2.0.1.host1`. Then micro team can filter issues with a glob in the Sentry UI `v2.0.1.*`.~~
