@@ -20,7 +20,7 @@ window.SENTRY_INIT_METHODS["simple-remote"] = {
   micro_internal_wrapper: null, 
   
   // This goes into [host] application's code
-  init_host_sentry:  function(tracing, debug, initialScope) {
+  init_host_sentry:  function(tracing, debug, initialScope, trace_propagation_targets) {
 
                var get_micro_instances = function() {
                   let wsm = window.__SENTRY_MICRO__;
@@ -34,7 +34,9 @@ window.SENTRY_INIT_METHODS["simple-remote"] = {
                     dsn: HOST_DSN,
                     release: HOST_RELEASE,
                     debug: debug,
-                    integrations: tracing ? [new Sentry.BrowserTracing()] : [],
+                    integrations: tracing ? [new Sentry.BrowserTracing({
+                      tracePropagationTargets: trace_propagation_targets 
+                    })] : [],
                     tracesSampleRate: 1.0,
                     initialScope: initialScope,
                     beforeSend: (event, hint) => {

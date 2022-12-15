@@ -108,6 +108,7 @@ export async function dynamic_load_sentry(module) {
     sticky_checkbox_get(`${module}_sentry_tracing`),
     sticky_checkbox_get(`${module}_sentry_debug`),
     {tags: {mv: `${method}@${sdk_version_and_bundle}`}},
+    ['localhost', /^\//, (new URL(BACKEND)).hostname],
     sentry_sdk_src
   );
   
@@ -121,8 +122,9 @@ export function patch_fetch_log_sent_errors() {
   const nativeFetch = window.fetch;
   window.fetch = function(...args) {
     let body = args[1].body;
-    if (!body.match(/"type":"session"/)) {
-      let error_msg = body.match(/"type":"Error","value":"([^"]+)/)[1];
+    let match = body.match(/"type":"Error","value":"([^"]+)/);
+    if (match) {
+      let error_msg = match[1];
       let truncated_url = args[0].replace(/\?.*/,'...');
       console.log(`Sending error "${error_msg}" to ${truncated_url}`);
     }
@@ -143,7 +145,7 @@ export function fool_isNativeFetch() {
 
 export function error_palette_create({name, init_add_breadcrumb_callback, init_console_callback, 
   init_capture_message_callback, init_exception_callback, eventhandler_callback, settimeout_callback, 
-  xhr_callback}) {
+  xhr_callback, fetchbe_callback}) {
 
   let div = document.createElement("div");
   div.className="error_controls";
@@ -182,11 +184,15 @@ export function error_palette_create({name, init_add_breadcrumb_callback, init_c
       <button type="button" class="xhr">
         XHR.onload()
       </button>
+      <button type="button" class="fetchbe">
+        fetch(BE).catch() 
+      </button>
       `;
   
   let b_eventhandler    = div.querySelector('.eventhandler');
   let b_settimeout      = div.querySelector('.settimeout');
   let b_xhr             = div.querySelector('.xhr');
+  let b_fetchbe         = div.querySelector('.fetchbe')
   
   sticky_checkbox_init(`${name}_init_add_breadcrumb`, false, div);
   sticky_checkbox_init(`${name}_init_console`, false, div);
@@ -204,6 +210,19 @@ export function error_palette_create({name, init_add_breadcrumb_callback, init_c
     req.onload = xhr_callback; 
     req.open("GET", "/index.html");
     req.send();
+  });
+  b_fetchbe.addEventListener("click", () => {
+    fetch(BACKEND, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "" 
+    }).then((response) => {
+      if (!response.ok) {
+        fetchbe_callback();
+      }
+    }).catch((err) => {
+      fetchbe_callback();
+    });
   });
 
   let eval_errors = function() {

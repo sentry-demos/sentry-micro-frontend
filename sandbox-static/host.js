@@ -31,8 +31,8 @@ Com.onDomContentLoaded(
         </span>
       </div>` + old_html;
     Com.sticky_checkbox_init("host_sentry_enabled",  true);
-    Com.sticky_checkbox_init("host_sentry_tracing",   false);
-    Com.sticky_checkbox_init("host_sentry_debug",     false);
+    Com.sticky_checkbox_init("host_sentry_tracing",  true);
+    Com.sticky_checkbox_init("host_sentry_debug",    false);
     if (HOST_PROJECT_URL) {Com.add_project_link(HOST_PROJECT_URL, "host", "label[for=hsd]");};
 
     let moduleU = module.toUpperCase();
@@ -50,7 +50,9 @@ Com.onDomContentLoaded(
       settimeout_callback: () => {
         throw new Error(`Uncaught exception in setTimeout callback [${moduleU}]`);},
       xhr_callback: () => {
-        throw new Error(`Uncaught exception in XMLHttpRequest's 'load' callback [${moduleU}]`);}
+        throw new Error(`Uncaught exception in XMLHttpRequest's 'load' callback [${moduleU}]`);},
+      fetchbe_callback: () => {
+        throw new Error(`Uncaught exception in fetch(BE).catch() [${moduleU}]`);},
     });
 
     let title = module_root.querySelector(".module_header");

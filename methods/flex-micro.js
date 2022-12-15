@@ -30,6 +30,7 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
     tracing,      // sandbox only, remove in production code
     debug,        // sandbox only
     initialScope, // sandbox only
+    trace_propagation_targets, // sandbox only
 
     // URL to dynamically load Sentry SDK bundle from
     sentry_sdk_src, 
@@ -313,7 +314,9 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
           dsn: MICRO_DSN,
           release: MICRO_RELEASE,
           debug: !(debug === undefined || debug === false), 
-          integrations: tracing === undefined || tracing === false ? [] : [new Sentry.BrowserTracing() ],
+          integrations: tracing === undefined || tracing === false ? [] : [new Sentry.BrowserTracing({
+            tracePropagationTargets: trace_propagation_targets 
+          }) ],
           tracesSampleRate: 1.0,
           initialScope: initialScope,
           beforeSend: (event, hint) => {

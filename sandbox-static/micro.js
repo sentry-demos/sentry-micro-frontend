@@ -50,7 +50,9 @@ function _micro_init(mount_func) {
       settimeout_callback: () => {
         throw new Error(`Uncaught exception in setTimeout callback [${moduleU}]`);},
       xhr_callback: () => {
-        throw new Error(`Uncaught exception in XMLHttpRequest's 'load' callback [${moduleU}]`);}
+        throw new Error(`Uncaught exception in XMLHttpRequest's 'load' callback [${moduleU}]`);},
+      fetchbe_callback: () => {
+        throw new Error(`Uncaught exception in fetch(BE).catch() [${moduleU}]`);},
     });
 
     module_root.appendChild(error_controls);
@@ -58,7 +60,7 @@ function _micro_init(mount_func) {
     mount_func(module_root);
 
     Com.sticky_checkbox_init("micro_sentry_enabled",  true);
-    Com.sticky_checkbox_init("micro_sentry_tracing",  false);
+    Com.sticky_checkbox_init("micro_sentry_tracing",  true);
     Com.sticky_checkbox_init("micro_sentry_debug",    false);
     if (MICRO_PROJECT_URL) {Com.add_project_link(MICRO_PROJECT_URL, "micro", "label[for=msd]");};
 
