@@ -148,7 +148,8 @@ To try out the sandbox:
 ```
 git clone git@github.com:realkosty/sentry-micro-frontend.git
 cd sentry-micro-frontend
-python3 -m http.server
+npm install
+node index.js
 ```
 Then rename `env.js.example` to `env.js`, fill in your DSNs, releases and project links. 
 

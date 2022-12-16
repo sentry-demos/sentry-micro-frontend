@@ -84,7 +84,7 @@ export async function dynamic_load_methods() {
 
 var _patched_fetch = false;
 
-export async function dynamic_load_sentry(module) {
+export async function dynamic_load_sentry(module, load_script=true) {
 
   if (!_patched_fetch) {
     patch_fetch_log_sent_errors(); // must be done in iframe since it has own window.fetch
@@ -99,8 +99,10 @@ export async function dynamic_load_sentry(module) {
 
   let sentry_sdk_src = `https://browser.sentry-cdn.com/${sdk_version_and_bundle}`; 
 
-  if (!(module === 'micro' && 'micro_sandbox_dont_load_script' in method_impl)) {
-    await dynamic_load_script(sentry_sdk_src);
+  if (load_script) {
+    if (!(module === 'micro' && 'micro_sandbox_dont_load_script' in method_impl)) {
+      await dynamic_load_script(sentry_sdk_src);
+    }
   }
 
   /* --> [micro] Sentry initialized here <-- */

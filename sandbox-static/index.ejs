@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>sentry-micro-frontend Host Application</title>
+  <link rel="stylesheet" href="../common.css">
+  <script
+  src="https://browser.sentry-cdn.com/7.26.0/bundle.tracing.min.js"
+  crossorigin="anonymous"
+  ></script>
+  
+  <script type="text/javascript" src="../env.js"></script>
+
+  <script  src="../methods/init.js"></script>
+  <script  src="../methods/simple-lib.js"></script>
+  <script  src="../methods/simple-remote.js"></script>
+  <script>
+    let method = sessionStorage.getItem("method");
+    let method_impl = window.SENTRY_INIT_METHODS[method];
+    method_impl[`init_host_sentry`](
+        true,
+        false,
+        null,
+        [/.*/],
+        //['localhost', /^\//, (new URL(BACKEND)).hostname],
+    );
+  </script>
+</head>
+<body>
+    Hello <%= what %>?
+
+  <script type="module" src="micro.js"></script>
+  <!-- Application entry point Everything happens here -->
+  <script type="module" src="host.js"></script>
+  
+  <div class="module_root" id="host">
+    <!-- Host content dynamically inserted here -->
+    <div id="micro_mount_point">
+      <!-- *** host.js mounts micro-frontend here *** -->
+    </div>
+  </div> 
+
+</body>
