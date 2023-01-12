@@ -214,15 +214,19 @@ export function error_palette_create({name, init_add_breadcrumb_callback, init_c
     req.send();
   });
   b_fetchbe.addEventListener("click", () => {
+    const transaction = Sentry.startTransaction({ name: "fetchbe" });
+    Sentry.getCurrentHub().configureScope(scope => scope.setSpan(transaction));
     fetch(BACKEND, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: "" 
     }).then((response) => {
+      transaction.finish();
       if (!response.ok) {
         fetchbe_callback();
       }
     }).catch((err) => {
+      transaction.finish();
       fetchbe_callback();
     });
   });
