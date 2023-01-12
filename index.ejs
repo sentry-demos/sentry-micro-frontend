@@ -12,7 +12,7 @@
   <span id="topbar">
     <label for="sandbox-select">Sandbox: </label>
     <select name="sandbox-select" id="sandbox-select">
-      <option value="sandbox-static">static</option>
+      <option value="sandbox-basic">basic</option>
     </select>
 
     <label for="method">method: </label>
@@ -25,7 +25,7 @@
     
     <label for="ssv">SDK: </label>
     <select name="ssv" id="sentry_sdk_version">
-      <option value="7.26.0/bundle.tracing.js">7.26.0/bundle.tracing.js (CDN)</option>
+      <option value="7.29.0/bundle.tracing.js">7.29.0/bundle.tracing.js (CDN)</option>
       <option value="7.11.1/bundle.tracing.js">7.11.1/bundle.tracing.js (CDN)</option>
       <option value="7.11.1/bundle.tracing.min.js">7.11.1/bundle.tracing.min.js (CDN)</option>
       <option value="6.19.6/bundle.tracing.js">6.19.6/bundle.tracing.js (CDN)</option>
@@ -39,11 +39,11 @@
 
   <script type="module">
     import * as Com from './common.js';
-    Com.sticky_select_init("sandbox-select", "sandbox-static");
+    Com.sticky_select_init("sandbox-select", "sandbox-basic");
     let sandbox = Com.sticky_select_get("sandbox-select");
     let iframe = document.querySelector(`#sandbox`);
     iframe.src = sandbox + "/";
     Com.sticky_select_init("method", "simple-lib");
-    Com.sticky_select_init("sentry_sdk_version", "7.11.1/bundle.tracing.js");
+    Com.sticky_select_init("sentry_sdk_version", "7.29.0/bundle.tracing.js");
   </script>
 </body>

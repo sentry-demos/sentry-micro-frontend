@@ -10,16 +10,16 @@ app.set('views', __dirname);
 
 app.get('/', (request, response) => {
     response.render('index', {
-      what: 'World',
+      example_var: 'hello world',
     });
   });
 
-app.get('/sandbox-static/', (request, response) => {
-    response.render('sandbox-static/index', {
-      what: 'World',
+app.get('/sandbox-basic/', (request, response) => {
+    response.render('sandbox-basic/index', {
+      example_var: 'Hello World',
     });
   });
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
+  console.log(`Sentry Micro-Frontend Sandbox is being served at http://localhost:${port}/ ...`)
 })
