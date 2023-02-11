@@ -25,6 +25,7 @@
     
     <label for="ssv">SDK: </label>
     <select name="ssv" id="sentry_sdk_version">
+      <option value="7.37.1/bundle.tracing.min.js">7.37.1/bundle.tracing.min.js (CDN)</option>
       <option value="7.29.0/bundle.tracing.js">7.29.0/bundle.tracing.js (CDN)</option>
       <option value="7.11.1/bundle.tracing.js">7.11.1/bundle.tracing.js (CDN)</option>
       <option value="7.11.1/bundle.tracing.min.js">7.11.1/bundle.tracing.min.js (CDN)</option>
@@ -44,6 +45,6 @@
     let iframe = document.querySelector(`#sandbox`);
     iframe.src = sandbox + "/";
     Com.sticky_select_init("method", "simple-lib");
-    Com.sticky_select_init("sentry_sdk_version", "7.29.0/bundle.tracing.js");
+    Com.sticky_select_init("sentry_sdk_version", "7.37.1/bundle.tracing.min.js");
   </script>
 </body>
