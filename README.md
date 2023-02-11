@@ -94,7 +94,8 @@ This method may be the best choice for **3premote** use case, because of its sim
 var sentry_micro_client = new Sentry.BrowserClient({
  dsn: "https://abc54321@o12345.ingest.sentry.io/12345" 
  release: "my-project-name@2.3.12",
- transport: ("fetch" in window ? Sentry.makeFetchTransport : Sentry.makeXHRTransport)
+ transport: ("fetch" in window ? Sentry.makeFetchTransport : Sentry.makeXHRTransport),
+ integrations: []
 }
 
 var sentry_wrap = function(callback) {

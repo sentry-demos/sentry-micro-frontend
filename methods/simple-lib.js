@@ -68,7 +68,8 @@ window.SENTRY_INIT_METHODS["simple-lib"] = {
       dsn: MICRO_DSN,
       release: MICRO_RELEASE,
       debug: debug,
-      transport: ("fetch" in window ? Sentry.makeFetchTransport : Sentry.makeXHRTransport)
+      transport: ("fetch" in window ? Sentry.makeFetchTransport : Sentry.makeXHRTransport),
+      integrations: []
     });
   }
 };

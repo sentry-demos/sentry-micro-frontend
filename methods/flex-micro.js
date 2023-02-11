@@ -301,7 +301,8 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
         dsn: MICRO_DSN,
         release: MICRO_RELEASE,
         debug: !(debug === undefined || debug === false), /* remove this (sandbox) */
-        transport: ("fetch" in window ? Sentry.makeFetchTransport : Sentry.makeXHRTransport)
+        transport: ("fetch" in window ? Sentry.makeFetchTransport : Sentry.makeXHRTransport),
+        integrations: []
       });
     }
 
