@@ -70,7 +70,8 @@ window.SENTRY_INIT_METHODS["lib-1h2c-wrap-v6"] = {
         debug: debug, /* remove this (sandbox) */
         transport: ("fetch" in window ? Sentry.makeFetchTransport : Sentry.makeXHRTransport),
         integrations: []
-      })
+      }),
+      release: MICRO_RELEASE
     }
   }
 };

@@ -20,6 +20,15 @@ window.SENTRY_INIT_METHODS["simple-lib"] = {
   
   // This goes into [host] application's code
   init_host_sentry:  function(tracing, debug, initialScope, trace_propagation_targets) {
+
+                  var get_micro_clients = function() {
+                    let wsm = window.__SENTRY_MICRO__;
+                    if (wsm === undefined || wsm.clients === undefined) {
+                      return [];
+                    }
+                    return wsm.clients;
+                  } 
+
                   Sentry.init({
                     dsn: HOST_DSN,
                     release: HOST_RELEASE,
@@ -40,14 +49,19 @@ window.SENTRY_INIT_METHODS["simple-lib"] = {
                        * For this to work the [host] team will most likely need to modify their build
                        * process to preserve information necessary to identify [micro]'s code.
                        */
-                      let MICRO_STACK_REGEX = /http[s]?:\/\/(localhost:8000|(www\.)?sentry-micro-frontend\.net)(\/.*)?\/micro(\.min)?\.js/;
+                      let MICRO_MATCHERS = {
+                        "micro": /http[s]?:\/\/(localhost:8000|(www\.)?sentry-micro-frontend\.net)(\/.*)?\/micro(\.min)?\.js/
+                      };
 
                       let stack = hint.originalException.stack || hint.syntheticException.stack;
-                      if (stack.match(MICRO_STACK_REGEX)) {
-                        event.release = window.SentryMicroClient._options.release;
-                        window.SentryMicroClient.captureEvent(event);
-
-                        return null;
+                      let micros = get_micro_clients();
+                      
+                      for (const iname in micros) {
+                        if (stack.match(MICRO_MATCHERS[iname])) {
+                          event.release = micros[iname].release;
+                          micros[iname].client.captureEvent(event);
+                          return null;
+                        }
                       }
                       return event;
                     }
@@ -63,13 +77,21 @@ window.SENTRY_INIT_METHODS["simple-lib"] = {
    * its Sentry.
    */
   init_micro_sentry: function(tracing, debug, initialScope) {
+    if (window.__SENTRY_MICRO__ === undefined) {
+      window.__SENTRY_MICRO__ = {clients: {}};
+    }
+
     /* TODO replace with unique module name, e.g. SentryCheckoutComponentClient */
-    window.SentryMicroClient = new Sentry.BrowserClient({ 
-      dsn: MICRO_DSN,
-      release: MICRO_RELEASE,
-      debug: debug,
-      transport: ("fetch" in window ? Sentry.makeFetchTransport : Sentry.makeXHRTransport),
-      integrations: []
-    });
+    window.__SENTRY_MICRO__.clients["micro"] = { 
+      /* host supplies matcher -> micro name mapping */
+      client: new Sentry.BrowserClient({ 
+        dsn: MICRO_DSN,
+        release: MICRO_RELEASE,
+        debug: debug,
+        transport: ("fetch" in window ? Sentry.makeFetchTransport : Sentry.makeXHRTransport),
+        integrations: []
+      }),
+      release: MICRO_RELEASE
+    }
   }
 };
