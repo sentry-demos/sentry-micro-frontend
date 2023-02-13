@@ -58,7 +58,7 @@ window.SENTRY_INIT_METHODS["simple-lib"] = {
                       
                       for (const iname in micros) {
                         if (stack.match(MICRO_MATCHERS[iname])) {
-                          event.release = micros[iname].release;
+                          event.release = micros[iname].client.getOptions().release;
                           micros[iname].client.captureEvent(event);
                           return null;
                         }
@@ -90,8 +90,7 @@ window.SENTRY_INIT_METHODS["simple-lib"] = {
         debug: debug,
         transport: ("fetch" in window ? Sentry.makeFetchTransport : Sentry.makeXHRTransport),
         integrations: []
-      }),
-      release: MICRO_RELEASE
+      })
     }
   }
 };

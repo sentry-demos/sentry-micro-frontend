@@ -292,8 +292,7 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
         window.__SENTRY_MICRO__ = {instances: {}};
       }
       window.__SENTRY_MICRO__.instances[component_name] = { 
-        matcher: stack_matcher,
-        release: MICRO_RELEASE
+        matcher: stack_matcher
       };
     }
 
@@ -325,7 +324,7 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
             let stack = hint.originalException.stack || hint.syntheticException.stack;
             let micro = match(stack);
             if (micro) {
-              event.release = micro.release;
+              event.release = micro.client.getOptions().release;
               micro.client.captureEvent(event);
             }
             return null; // host error, don't care
