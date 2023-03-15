@@ -333,25 +333,30 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
     }
 
     var patch_temp_queueing_handlers = function() {
-      window.__SENTRY_MICRO__.error_queue = [];
-      patch_global_handler('error', temp_queueing_patch('error'));
-      patch_global_handler('unhandledrejection', temp_queueing_patch('unhandledrejection'));
-      patch_set_callback_func(window, 'setTimeout', temp_queueing_patch('trycatch'));
-      patch_set_callback_func(window, 'setInterval', temp_queueing_patch('trycatch'));
-      patch_set_callback_func(window, 'requestAnimationFrame', temp_queueing_patch('trycatch'));
-      patch_xhr(temp_queueing_patch('trycatch'));
-      DEFAULT_EVENT_TARGET.forEach((t) => patch_event_target(t, temp_queueing_patch('trycatch')));
+      if (!window.__SENTRY_MICRO__.error_queue) {
+        window.__SENTRY_MICRO__.error_queue = [];
+        patch_global_handler('error', temp_queueing_patch('error'));
+        patch_global_handler('unhandledrejection', temp_queueing_patch('unhandledrejection'));
+        patch_set_callback_func(window, 'setTimeout', temp_queueing_patch('trycatch'));
+        patch_set_callback_func(window, 'setInterval', temp_queueing_patch('trycatch'));
+        patch_set_callback_func(window, 'requestAnimationFrame', temp_queueing_patch('trycatch'));
+        patch_xhr(temp_queueing_patch('trycatch'));
+        DEFAULT_EVENT_TARGET.forEach((t) => patch_event_target(t, temp_queueing_patch('trycatch')));
+      }
     }
 
     var patch = function() {
-      // these correspond to GlobalHandlers and TryCatch integrations
-      patch_global_handler('error', filtering_patch);
-      patch_global_handler('unhandledrejection', filtering_patch);
-      patch_set_callback_func(window, 'setTimeout', filtering_patch);
-      patch_set_callback_func(window, 'setInterval', filtering_patch);
-      patch_set_callback_func(window, 'requestAnimationFrame', filtering_patch);
-      patch_xhr(filtering_patch);
-      DEFAULT_EVENT_TARGET.forEach((t) => patch_event_target(t, filtering_patch));
+      if (!window.__SENTRY_MICRO__.patched) {
+        window.__SENTRY_MICRO__.patched = true;
+        // these correspond to GlobalHandlers and TryCatch integrations
+        patch_global_handler('error', filtering_patch);
+        patch_global_handler('unhandledrejection', filtering_patch);
+        patch_set_callback_func(window, 'setTimeout', filtering_patch);
+        patch_set_callback_func(window, 'setInterval', filtering_patch);
+        patch_set_callback_func(window, 'requestAnimationFrame', filtering_patch);
+        patch_xhr(filtering_patch);
+        DEFAULT_EVENT_TARGET.forEach((t) => patch_event_target(t, filtering_patch));
+      }
     }
 
     var has_DOMContentLoaded_already_fired = function() {
