@@ -1,4 +1,5 @@
 import {default_host_init} from './init.js';
+import {compose_event_processor} from './lib.js';
 
 /* All the code included in this repository is intended as example only and should NOT be
  * adopted for use in production software without first undergoing full review and rigorous 
@@ -297,12 +298,34 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
     }
 
     var init_micro_client = function() {
+      const context = {};
+      const integrations = [
+        new Sentry.Integrations.Dedupe()
+      ];
+
+      let eventProcessor;
+
+      integrations.forEach((integration) => {
+        integration.setupOnce(
+          (f) => {          
+            eventProcessor = eventProcessor
+              ? compose_event_processor(eventProcessor, f)
+              : f;
+          },
+          () => ({
+            getIntegration: (Integration) => context, // TODO: Also Integration._handler?
+            getClient: () => window.__SENTRY_MICRO__.instances[component_name].client
+          })
+        )
+      });
+
       window.__SENTRY_MICRO__.instances[component_name].client = new Sentry.BrowserClient({
         dsn: MICRO_DSN,
         release: MICRO_RELEASE,
         debug: !(debug === undefined || debug === false), /* remove this (sandbox) */
         transport: ("fetch" in window ? Sentry.makeFetchTransport : Sentry.makeXHRTransport),
-        integrations: []
+        integrations: [],
+        beforeSend: (event, hint) => eventProcessor(event, hint)
       });
     }
 
