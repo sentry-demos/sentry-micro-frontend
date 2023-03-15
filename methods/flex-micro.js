@@ -303,13 +303,25 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
         new Sentry.Integrations.Dedupe()
       ];
 
-      let eventProcessor;
+      // Custom integration event processor to define integrations on the event
+      let event_processor = (event) => {
+        if (event) {
+
+          if (!event.sdk) {
+            event.sdk = {};
+          }
+  
+          event.sdk.integrations = integrations.map(Integration => Integration.name);
+        }
+
+        return event;
+      };
 
       integrations.forEach((integration) => {
         integration.setupOnce(
           (f) => {          
-            eventProcessor = eventProcessor
-              ? compose_event_processor(eventProcessor, f)
+            event_processor = event_processor
+              ? compose_event_processor(event_processor, f)
               : f;
           },
           () => ({
@@ -325,7 +337,7 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
         debug: !(debug === undefined || debug === false), /* remove this (sandbox) */
         transport: ("fetch" in window ? Sentry.makeFetchTransport : Sentry.makeXHRTransport),
         integrations: [],
-        beforeSend: (event, hint) => eventProcessor(event, hint)
+        beforeSend: (event, hint) => event_processor(event, hint)
       });
     }
 
