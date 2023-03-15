@@ -194,7 +194,7 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
           var callback_props = ['onload', 'onerror', 'onprogress', 'onreadystatechange'];
           callback_props.forEach(prop  => {
             if (prop in xhr && typeof xhr[prop] === 'function') {
-              patch_prop(xhr, prop, wrap_callback(xhr[prop], patch_func));
+              patch_prop(xhr, prop, function (original) { return wrap_callback(original, patch_func) });
             }
           });
           return original.apply(xhr, args);
