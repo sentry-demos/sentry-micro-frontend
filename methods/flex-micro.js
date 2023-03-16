@@ -298,10 +298,11 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
     }
 
     var init_micro_client = function() {
-      const context = {};
-      const integrations = [
-        new Sentry.Integrations.Dedupe()
-      ];
+      const integrationIndex = {};
+
+      if (!integrations?.length) {
+        integrations = [new sdk.Integrations.Dedupe()];
+      }
 
       // Custom integration event processor to define integrations on the event
       let event_processor = (event) => {
@@ -318,6 +319,8 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
       };
 
       integrations.forEach((integration) => {
+        integrationIndex[integration.name] = integration; 
+
         integration.setupOnce(
           (f) => {          
             event_processor = event_processor
@@ -325,7 +328,7 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
               : f;
           },
           () => ({
-            getIntegration: (Integration) => context, // TODO: Also Integration._handler?
+            getIntegration: (integration) => integrationIndex[integration.name],
             getClient: () => window.__SENTRY_MICRO__.instances[component_name].client
           })
         )
