@@ -56,6 +56,8 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
       // this disables temp queueing hanlders, must be done before calling window.onerror() 
       delete window.__SENTRY_MICRO__.error_queue; 
       for (const [type, args] of errors) {
+        let [micro, error] = match_and_extract(...args);
+
         try {
           delete error.__sentry_captured__; // see temp_queueing_patch()
         } catch (x) {}
