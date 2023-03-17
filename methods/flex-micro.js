@@ -58,16 +58,18 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
       for (const [type, args] of errors) {
         let [micro, error] = match_and_extract(...args);
 
-        try {
-          delete error.__sentry_captured__; // see temp_queueing_patch()
-        } catch (x) {}
+        if (micro) {
+          try {
+            delete error.__sentry_captured__; // see temp_queueing_patch()
+          } catch (x) {}
 
-        if (type === 'error') {
-          window.onerror.apply(window, args);
-        } else if (type === 'unhandledrejection') {
-          window.onunhandledrejection.apply(window, args);
-        } else { // type === 'trycatch'
-          throw error;
+          if (type === 'error') {
+            window.onerror.apply(window, args);
+          } else if (type === 'unhandledrejection') {
+            window.onunhandledrejection.apply(window, args);
+          } else { // type === 'trycatch'
+            throw error;
+          }
         }
       }
     }
