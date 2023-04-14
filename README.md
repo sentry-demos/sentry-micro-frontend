@@ -132,6 +132,8 @@ req.send();
 In one unlikely circumstance `flex-micro.js` will leak the very first error into `host` project/DSN. This will happen if (1) at the time of `micro`'s initialization `host`-Sentry has not only not been initialized yet but the SDK hasn't even been loaded. In that situation whe can not detect the exact moment Sentry.init() is called and only detect it when 1 error may have already been incorrectly reported to `host`. (TODO: would it be possible to patch `onload` events of all <script> elements on the page to detect that?).
 
 ## Fundamental technical challenges
+TLDR: You catch unhandled error from an event handler function. How do you know which FE/widget/micro-component added that event handler, and therefore, which Sentry project to send this error to?
+	
 The nature of Javascript/browser environment presents significant obstacles to implementing first class support of MFEs in Sentry SDK. 
 
 1. Javascript's concurrency model (single thread event loop) makes it very difficult for Sentry Javascript SDK to [maintain 'current hub' state](https://develop.sentry.dev/sdk/unified-api/#concurrency). (e.g. client code async waiting inside `Hub.run()`).
