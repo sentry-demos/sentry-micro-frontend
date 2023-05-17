@@ -8,8 +8,7 @@ What is this repo?
   - [Sentry support](#sentry-support)
     - [Current Methods](#current-methods)
     - [Fundamental technical challenges](#fundamental-technical-challenges)
-  - [Sandbox how-to](#sandbox-how-to)
-  - [Sandbox tips](#sandbox-tips)
+  - [Sandbox (for testing)](#sandbox)
 
 # Problem Overview
 Micro-frontend is not a specific technology, but rather a concept (or buzzword). Modeled after the idea of microservices vs monolith backend, it is a design pattern where a single user-facing web application is composed of 2 or more separate frontend components each owned (and in the case of true, remote, MFEs - also deployed and operated) by a separate team. The goal is to allow each component-owner team to build and ship independently. Naturally, the developers want the errors from different components **go into their own separate Sentry projects/DSNs**. Unfortunately, the naive approach of calling `Sentry.init()` in each component does not work.
@@ -145,7 +144,13 @@ The nature of Javascript/browser environment presents significant obstacles to i
 3. Loss of `function/file -> Component` mapping and function names during build process  (**lib** architecture).
 
 
-# Sandbox how-to<a name="sandbox"></a>
+# Sandbox 
+
+A tool for manula end-to-end testing of Sentry in micro-frontend environment. Currently offers a basic DIY micro-frontend "framework" with 1 MFE and 1 HOST application.
+	
+<img width="640" alt="Screenshot 2023-05-17 at 3 20 23 PM" src="https://github.com/sentry-demos/sentry-micro-frontend/assets/490201/e8b86cc6-5264-4da5-88c5-7aceb7fb7a8b">
+	
+## Sandbox how-to<a name="sandbox"></a>
 
 To try out the sandbox:
 ```
@@ -158,7 +163,7 @@ Then rename `env.js.example` to `env.js`, fill in your DSNs, releases and projec
 
 Finally, open http://localhost:8000/
 
-# Sandbox tips
+## Sandbox tips
 
 Sandbox sets `mv` tag on all events sent to Sentry which is `<module>@<SDK version>`, for example:
 
