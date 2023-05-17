@@ -146,7 +146,7 @@ The nature of Javascript/browser environment presents significant obstacles to i
 
 # Sandbox 
 
-A tool for manula end-to-end testing of Sentry in micro-frontend environment. Currently offers a basic DIY micro-frontend "framework" with 1 MFE and 1 HOST application.
+A tool for manual end-to-end testing of Sentry in micro-frontend environment. Currently offers a basic DIY micro-frontend "framework" with 1 micro and 1 host application.
 	
 <img width="640" alt="Screenshot 2023-05-17 at 3 20 23 PM" src="https://github.com/sentry-demos/sentry-micro-frontend/assets/490201/e8b86cc6-5264-4da5-88c5-7aceb7fb7a8b">
 	
