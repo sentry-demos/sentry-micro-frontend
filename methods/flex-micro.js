@@ -95,12 +95,15 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
     };
 
     var match = function(stack) {
-      let micros = window.__SENTRY_MICRO__.instances;
-      for (const iname in micros) {
-        if (stack.match(micros[iname].matcher)) {
-          return micros[iname];
+      if (stack) {
+        let micros = window.__SENTRY_MICRO__.instances;
+        for (const iname in micros) {
+          if (stack.match(micros[iname].matcher)) {
+            return micros[iname];
+          }
         }
       }
+  
       return null;
     };
 
