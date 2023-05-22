@@ -56,16 +56,20 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
       // this disables temp queueing hanlders, must be done before calling window.onerror() 
       delete window.__SENTRY_MICRO__.error_queue; 
       for (const [type, args] of errors) {
-        try {
-          delete error.__sentry_captured__; // see temp_queueing_patch()
-        } catch (x) {}
+        let [micro, error] = match_and_extract(...args);
 
-        if (type === 'error') {
-          window.onerror.apply(window, args);
-        } else if (type === 'unhandledrejection') {
-          window.onunhandledrejection.apply(window, args);
-        } else { // type === 'trycatch'
-          throw error;
+        if (micro) {
+          try {
+            delete error.__sentry_captured__; // see temp_queueing_patch()
+          } catch (x) {}
+
+          if (type === 'error') {
+            window.onerror.apply(window, args);
+          } else if (type === 'unhandledrejection') {
+            window.onunhandledrejection.apply(window, args);
+          } else { // type === 'trycatch'
+            throw error;
+          }
         }
       }
     }
