@@ -1,4 +1,5 @@
 import {default_host_init} from './init.js';
+import {compose_event_processor} from './lib.js';
 
 /* All the code included in this repository is intended as example only and should NOT be
  * adopted for use in production software without first undergoing full review and rigorous 
@@ -297,12 +298,49 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
     }
 
     var init_micro_client = function() {
+      const integrationIndex = {};
+
+      if (!integrations?.length) {
+        integrations = [new sdk.Integrations.Dedupe()];
+      }
+
+      // Custom integration event processor to define integrations on the event
+      let event_processor = (event) => {
+        if (event) {
+
+          if (!event.sdk) {
+            event.sdk = {};
+          }
+  
+          event.sdk.integrations = integrations.map(Integration => Integration.name);
+        }
+
+        return event;
+      };
+
+      integrations.forEach((integration) => {
+        integrationIndex[integration.name] = integration; 
+
+        integration.setupOnce(
+          (f) => {          
+            event_processor = event_processor
+              ? compose_event_processor(event_processor, f)
+              : f;
+          },
+          () => ({
+            getIntegration: (integration) => integrationIndex[integration.name],
+            getClient: () => window.__SENTRY_MICRO__.instances[component_name].client
+          })
+        )
+      });
+
       window.__SENTRY_MICRO__.instances[component_name].client = new Sentry.BrowserClient({
         dsn: MICRO_DSN,
         release: MICRO_RELEASE,
         debug: !(debug === undefined || debug === false), /* remove this (sandbox) */
         transport: ("fetch" in window ? Sentry.makeFetchTransport : Sentry.makeXHRTransport),
-        integrations: []
+        integrations: [],
+        beforeSend: (event, hint) => event_processor(event, hint)
       });
     }
 
